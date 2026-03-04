@@ -18,6 +18,9 @@ use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\NetworkController;
 use App\Http\Controllers\EggController;
+use App\Http\Controllers\StreamController;
+use App\Http\Controllers\ApiController;
+use App\Http\Controllers\SecurityController;
 use App\Models\Service;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -30,6 +33,7 @@ Route::post('/two-factor-challenge', [TwoFactorController::class, 'verify'])->na
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/admin-stats', [DashboardController::class, 'adminStats'])->name('dashboard.admin-stats');
     
     // Services
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
@@ -48,6 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/metrics/system', [MetricsController::class, 'getSystemStats'])->name('metrics.system');
     Route::get('/metrics/service/{id}', [MetricsController::class, 'getServiceStats'])->name('metrics.service');
     Route::get('/metrics/service/{id}/history', [MetricsController::class, 'getServiceHistory'])->name('metrics.history');
+    Route::get('/metrics/service/{id}/history-24h', [MetricsController::class, 'getServiceHistory24h'])->name('metrics.history_24h');
+    Route::get('/metrics/service/{id}/stream', [StreamController::class, 'streamStats'])->name('metrics.stream');
     
     // Activity Logs
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('logs.index');
@@ -110,6 +116,7 @@ Route::middleware('auth')->group(function () {
 
     // Console
     Route::get('/services/{id}/logs', [ConsoleController::class, 'getLogs'])->name('services.logs');
+    Route::get('/services/{id}/logs/stream', [StreamController::class, 'streamLogs'])->name('services.logs.stream');
     Route::post('/services/{id}/command', [ConsoleController::class, 'executeCommand'])->name('services.command');
     
     // File Manager
@@ -135,12 +142,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/eggs', [EggController::class, 'index'])->name('eggs.index');
     Route::get('/eggs/create', [EggController::class, 'create'])->name('eggs.create');
     Route::post('/eggs', [EggController::class, 'store'])->name('eggs.store');
+    Route::post('/eggs/import', [EggController::class, 'import'])->name('eggs.import');
+    Route::post('/eggs/{id}/clone', [EggController::class, 'clone'])->name('eggs.clone');
     Route::get('/eggs/{id}/edit', [EggController::class, 'edit'])->name('eggs.edit');
+    Route::get('/eggs/{id}/export', [EggController::class, 'export'])->name('eggs.export');
     Route::put('/eggs/{id}', [EggController::class, 'update'])->name('eggs.update');
     Route::delete('/eggs/{id}', [EggController::class, 'destroy'])->name('eggs.destroy');
     
     // Network/Ports
     Route::get('/network', [NetworkController::class, 'index'])->name('network.index');
+
+    // Security Audit
+    Route::get('/security', [SecurityController::class, 'index'])->name('settings.security');
+    Route::delete('/security/sessions/{id}', [SecurityController::class, 'destroySession'])->name('settings.security.sessions.destroy');
     
     // Discord Feed
     Route::get('/discord/messages', [DiscordController::class, 'getMessages']);
@@ -148,6 +162,7 @@ Route::middleware('auth')->group(function () {
 
 // Discord Webhook (External)
 Route::post('/webhooks/discord', [DiscordController::class, 'webhook']);
+Route::post('/api/discord/interactions', [DiscordController::class, 'handleInteraction']);
 
 // API Routes
 Route::prefix('api')->middleware('api.auth')->group(function () {
@@ -175,3 +190,7 @@ Route::prefix('api')->middleware('api.auth')->group(function () {
         return response()->json(['status' => $service->getStatus(), 'pid' => $service->pid]);
     });
 });
+
+// API Documentation
+Route::get('/docs', [ApiController::class, 'docs'])->name('api.docs');
+Route::get('/api-schema.json', [ApiController::class, 'schema'])->name('api.schema');

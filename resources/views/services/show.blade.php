@@ -204,6 +204,14 @@
                                 <canvas id="ramChart"></canvas>
                             </div>
                         </div>
+
+                        <!-- 24h Analytics Link -->
+                        <div class="pt-2">
+                            <button onclick="toggleAnalytics24h()" class="w-full flex items-center justify-center space-x-2 py-2 bg-gray-50 dark:bg-dark-hover rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-brand-500 transition-all border border-gray-100 dark:border-dark-border">
+                                <i data-lucide="bar-chart-3" class="w-3 h-3"></i>
+                                <span>24h Analytics</span>
+                            </button>
+                        </div>
                     </div>
                     @endif
                 </div>
@@ -263,12 +271,68 @@
     </div>
 </div>
 
+<!-- 24h Analytics Modal -->
+<div id="analytics-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-300 opacity-0">
+    <div class="bg-white dark:bg-dark-card w-full max-w-5xl rounded-[2.5rem] border border-gray-200 dark:border-dark-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50 dark:bg-dark-hover">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500">
+                    <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">24-Hour Resource Analytics</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Long-term performance tracking for {{ $service->name }}</p>
+                </div>
+            </div>
+            <button onclick="toggleAnalytics24h()" class="p-2 text-gray-400 hover:text-red-500 transition-colors bg-white dark:bg-dark-bg rounded-xl border border-gray-200 dark:border-dark-border">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-8 space-y-12 custom-scrollbar">
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <h4 class="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">CPU Load History (%)</h4>
+                    <div id="cpu-avg" class="text-xs font-mono font-bold text-brand-500 px-3 py-1 bg-brand-50 dark:bg-brand-900/20 rounded-lg">Avg: ...%</div>
+                </div>
+                <div class="h-64 w-full">
+                    <canvas id="cpuChart24h"></canvas>
+                </div>
+            </div>
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <h4 class="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">Memory Usage History (MB)</h4>
+                    <div id="ram-avg" class="text-xs font-mono font-bold text-purple-500 px-3 py-1 bg-purple-50 dark:bg-purple-900/20 rounded-lg">Avg: ... MB</div>
+                </div>
+                <div class="h-64 w-full">
+                    <canvas id="ramChart24h"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     const consoleOutput = document.getElementById('console-output');
     let lastLogContent = '';
+    let logSource, statsSource;
+    let cpuChart24h, ramChart24h;
 
     // Chart Configuration
     const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: { beginAtZero: true, display: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { display: true, grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } }
+        },
+        plugins: { legend: { display: false } },
+        elements: {
+            point: { radius: 2, hoverRadius: 5 },
+            line: { tension: 0.3, borderWidth: 3 }
+        }
+    };
+
+    const miniChartOptions = {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
@@ -283,6 +347,7 @@
     };
 
     let cpuChart, ramChart;
+    let logInterval, statsInterval;
 
     function initCharts() {
         const cpuCtx = document.getElementById('cpuChart')?.getContext('2d');
@@ -292,7 +357,7 @@
             cpuChart = new Chart(cpuCtx, {
                 type: 'line',
                 data: { labels: [], datasets: [{ data: [], borderColor: '#0c91eb', backgroundColor: 'rgba(12, 145, 235, 0.1)', fill: true }] },
-                options: chartOptions
+                options: miniChartOptions
             });
         }
 
@@ -300,9 +365,94 @@
             ramChart = new Chart(ramCtx, {
                 type: 'line',
                 data: { labels: [], datasets: [{ data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', fill: true }] },
-                options: chartOptions
+                options: miniChartOptions
             });
         }
+    }
+
+    function fetchLogs() {
+        fetch('{{ route('services.logs', $service->id) }}')
+            .then(res => res.json())
+            .then(data => {
+                if (data.logs !== lastLogContent) {
+                    consoleOutput.textContent = data.logs || '--- System: Awaiting application output ---';
+                    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                    lastLogContent = data.logs;
+                }
+            })
+            .catch(() => {});
+    }
+
+    function fetchStats() {
+        @if($service->getStatus() == 'running')
+        fetch('{{ route('metrics.service', $service->id) }}')
+            .then(res => res.json())
+            .then(data => {
+                const cpuEl = document.getElementById('detail-cpu');
+                const ramEl = document.getElementById('detail-ram');
+                if (cpuEl && ramEl) {
+                    cpuEl.textContent = data.cpu + '%';
+                    ramEl.textContent = data.ram;
+                }
+                updateCharts();
+            })
+            .catch(() => {});
+        @endif
+    }
+
+    function toggleAnalytics24h() {
+        const modal = document.getElementById('analytics-modal');
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.add('opacity-100'); modal.classList.remove('opacity-0'); }, 10);
+            loadAnalytics24h();
+        } else {
+            modal.classList.add('opacity-0');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    }
+
+    function loadAnalytics24h() {
+        fetch('{{ route('metrics.history_24h', $service->id) }}')
+            .then(res => res.json())
+            .then(data => {
+                const labels = data.map(p => p.time.split(' ')[1]); // Only show Time H:i
+                const cpuData = data.map(p => p.cpu);
+                const ramData = data.map(p => p.ram);
+
+                const avgCpu = cpuData.length ? (cpuData.reduce((a, b) => a + b, 0) / cpuData.length).toFixed(1) : 0;
+                const avgRam = ramData.length ? (ramData.reduce((a, b) => a + b, 0) / ramData.length).toFixed(1) : 0;
+
+                document.getElementById('cpu-avg').textContent = `Avg: ${avgCpu}%`;
+                document.getElementById('ram-avg').textContent = `Avg: ${avgRam} MB`;
+
+                if (!cpuChart24h) {
+                    const ctx = document.getElementById('cpuChart24h').getContext('2d');
+                    cpuChart24h = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels: labels, datasets: [{ data: cpuData, borderColor: '#0c91eb', backgroundColor: 'rgba(12, 145, 235, 0.05)', fill: true }] },
+                        options: chartOptions
+                    });
+                } else {
+                    cpuChart24h.data.labels = labels;
+                    cpuChart24h.data.datasets[0].data = cpuData;
+                    cpuChart24h.update();
+                }
+
+                if (!ramChart24h) {
+                    const ctx = document.getElementById('ramChart24h').getContext('2d');
+                    ramChart24h = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels: labels, datasets: [{ data: ramData, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', fill: true }] },
+                        options: chartOptions
+                    });
+                } else {
+                    ramChart24h.data.labels = labels;
+                    ramChart24h.data.datasets[0].data = ramData;
+                    ramChart24h.update();
+                }
+            });
     }
 
     function updateCharts() {
@@ -329,16 +479,47 @@
             });
     }
 
-    function fetchLogs() {
-        fetch('{{ route('services.logs', $service->id) }}')
-            .then(res => res.json())
-            .then(data => {
-                if (data.logs !== lastLogContent) {
-                    consoleOutput.textContent = data.logs || '--- System: Awaiting application output stream ---';
-                    consoleOutput.scrollTop = consoleOutput.scrollHeight;
-                    lastLogContent = data.logs;
-                }
-            });
+    function initLogStream() {
+        if (logSource) logSource.close();
+        
+        logSource = new EventSource('{{ route('services.logs.stream', $service->id) }}');
+        
+        logSource.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.append) {
+                consoleOutput.textContent += data.logs;
+            } else {
+                consoleOutput.textContent = data.logs || '--- System: Awaiting application output stream ---';
+            }
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        logSource.onerror = function() {
+            console.warn('Log stream connection lost. Reconnecting...');
+        };
+    }
+
+    function initStatsStream() {
+        @if($service->getStatus() == 'running')
+        if (statsSource) statsSource.close();
+
+        statsSource = new EventSource('{{ route('metrics.stream', $service->id) }}');
+
+        statsSource.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const cpuEl = document.getElementById('detail-cpu');
+            const ramEl = document.getElementById('detail-ram');
+            if (cpuEl && ramEl) {
+                cpuEl.textContent = data.cpu + '%';
+                ramEl.textContent = data.ram;
+            }
+            updateCharts();
+        };
+
+        statsSource.onerror = function() {
+            console.warn('Stats stream connection lost.');
+        };
+        @endif
     }
 
     function clearConsole() {
@@ -364,38 +545,30 @@
             body: JSON.stringify({ command: command })
         })
         .then(() => {
+            // Optimistic UI: Append command to console immediately
             const cmdLine = document.createElement('div');
             cmdLine.className = 'text-brand-400 mt-2 font-bold';
             cmdLine.textContent = '> ' + command;
             consoleOutput.appendChild(cmdLine);
             consoleOutput.scrollTop = consoleOutput.scrollHeight;
-            
-            setTimeout(fetchLogs, 500);
         });
     }
 
-    function fetchStats() {
-        @if($service->getStatus() == 'running')
-        fetch('{{ route('metrics.service', $service->id) }}')
-            .then(res => res.json())
-            .then(data => {
-                const cpuEl = document.getElementById('detail-cpu');
-                const ramEl = document.getElementById('detail-ram');
-                if (cpuEl && ramEl) {
-                    cpuEl.textContent = data.cpu + '%';
-                    ramEl.textContent = data.ram;
-                }
-                updateCharts();
-            });
-        @endif
-    }
-
     initCharts();
-    setInterval(fetchLogs, 2000);
-    setInterval(fetchStats, 5000);
     fetchLogs();
     fetchStats();
+    updateCharts(); // Initial charts load
+    
+    // Start polling instead of streaming to prevent server blocking
+    logInterval = setInterval(fetchLogs, 2000);
+    statsInterval = setInterval(fetchStats, 5000);
     
     if(typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // Cleanup on page leave
+    window.addEventListener('beforeunload', () => {
+        if (logInterval) clearInterval(logInterval);
+        if (statsInterval) clearInterval(statsInterval);
+    });
 </script>
 @endsection

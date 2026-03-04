@@ -48,6 +48,21 @@
                         </button>
                     </form>
                 </div>
+                <div class="bg-gray-50 dark:bg-dark-hover px-8 py-6 border-b border-gray-200 dark:border-dark-border">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 shrink-0">
+                            <i data-lucide="lightbulb" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Smart Analysis</h4>
+                            <p class="text-sm text-brand-600 dark:text-brand-400 font-bold mt-1">{{ $log['analysis'] }}</p>
+                            <div class="mt-3 flex items-center space-x-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border px-4 py-2.5 rounded-xl">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i>
+                                <span class="text-xs font-bold text-gray-600 dark:text-gray-400">Suggestion: <span class="text-gray-900 dark:text-white">{{ $log['suggestion'] }}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="bg-gray-900 dark:bg-black p-8 font-mono text-[11px] leading-relaxed overflow-x-auto text-red-400/90 whitespace-pre-wrap selection:bg-red-500 selection:text-white">
                     <p class="mb-4 text-[10px] text-gray-600 dark:text-gray-500 uppercase font-black tracking-widest border-b border-gray-800 pb-2">Last Console Output (Tail)</p>
                     {{ $log['log_snippet'] }}

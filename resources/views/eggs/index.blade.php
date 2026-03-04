@@ -10,12 +10,27 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Create and manage pre-configured deployment templates.</p>
         </div>
         <div class="flex items-center space-x-3">
+            <button onclick="document.getElementById('import-file-input').click()" class="flex items-center space-x-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-300 px-6 py-2.5 rounded-2xl text-sm font-bold transition-all hover:shadow-md active:scale-95">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Import Template</span>
+            </button>
+            <form id="import-form" action="{{ route('eggs.import') }}" method="POST" enctype="multipart/form-data" class="hidden">
+                @csrf
+                <input type="file" id="import-file-input" name="import_file" accept=".json" onchange="this.form.submit()">
+            </form>
             <a href="{{ route('eggs.create') }}" class="flex items-center space-x-2 bg-brand-500 hover:bg-brand-600 text-white px-6 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 active:translate-y-0">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 <span>Create New Egg</span>
             </a>
         </div>
     </div>
+
+    @if($errors->any())
+        <div class="bg-red-100 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-700 dark:text-red-400 p-4 rounded-2xl flex items-center space-x-3">
+            <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+            <span class="text-sm font-bold">{{ $errors->first() }}</span>
+        </div>
+    @endif
 
     @if(session('status'))
         <div class="bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 text-green-700 dark:text-green-400 p-4 rounded-2xl flex items-center space-x-3">
@@ -28,15 +43,29 @@
         @foreach($eggs as $egg)
             <div class="group bg-white dark:bg-dark-card rounded-[2rem] border border-gray-200 dark:border-dark-border p-8 hover:shadow-2xl hover:border-brand-500/30 transition-all duration-500 relative overflow-hidden flex flex-col h-full">
                 <div class="flex items-start justify-between relative z-10 mb-4">
-                    <div class="flex-1">
-                        <h3 class="font-extrabold text-xl text-gray-900 dark:text-white group-hover:text-brand-500 transition-colors">{{ $egg->name }}</h3>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-dark-hover text-gray-500 dark:text-gray-400 mt-1">
-                            <i data-lucide="{{ $egg->type === 'docker' ? 'container' : 'cpu' }}" class="w-3 h-3 mr-1"></i>
-                            {{ strtoupper($egg->type) }}
-                        </span>
+                    <div class="flex items-center space-x-4 flex-1">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-900/10 flex items-center justify-center text-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-all duration-500">
+                            <i data-lucide="{{ $egg->icon ?? 'box' }}" class="w-6 h-6"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-extrabold text-xl text-gray-900 dark:text-white group-hover:text-brand-500 transition-colors">{{ $egg->name }}</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-dark-hover text-gray-500 dark:text-gray-400 mt-1">
+                                <i data-lucide="{{ $egg->type === 'docker' ? 'container' : 'cpu' }}" class="w-3 h-3 mr-1"></i>
+                                {{ strtoupper($egg->type) }}
+                            </span>
+                        </div>
                     </div>
                     <div class="flex space-x-2">
-                        <a href="{{ route('eggs.edit', $egg->id) }}" class="p-2 bg-gray-50 dark:bg-dark-bg text-gray-400 hover:text-brand-500 rounded-xl transition-colors">
+                        <form action="{{ route('eggs.clone', $egg->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="p-2 bg-gray-50 dark:bg-dark-bg text-gray-400 hover:text-green-500 rounded-xl transition-colors" title="Clone Template">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                        <a href="{{ route('eggs.export', $egg->id) }}" class="p-2 bg-gray-50 dark:bg-dark-bg text-gray-400 hover:text-indigo-500 rounded-xl transition-colors" title="Export JSON">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </a>
+                        <a href="{{ route('eggs.edit', $egg->id) }}" class="p-2 bg-gray-50 dark:bg-dark-bg text-gray-400 hover:text-brand-500 rounded-xl transition-colors" title="Edit Template">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                         </a>
                         <form action="{{ route('eggs.destroy', $egg->id) }}" method="POST" onsubmit="return confirm('Delete this template?')">

@@ -51,27 +51,68 @@ class FileUser implements Authenticatable
 
     public function save()
     {
-        $users = static::all();
-        
-        if (!$this->id) {
-            $this->id = uniqid();
-            $users->push($this);
-        } else {
-            $users = $users->map(function ($u) {
-                return $u->id == $this->id ? $this : $u;
-            });
-        }
-
-        Storage::disk('local')->put('users.json', json_encode($users->values()->toArray(), JSON_PRETTY_PRINT));
+        $this->updateFile(function ($users) {
+            if (!$this->id) {
+                $this->id = uniqid();
+                $users->push($this);
+            } else {
+                $users = $users->map(function ($u) {
+                    return $u->id == $this->id ? $this : $u;
+                });
+            }
+            return $users;
+        });
     }
 
     public function delete()
     {
-        $users = static::all()->reject(function ($u) {
-            return $u->id == $this->id;
+        $this->updateFile(function ($users) {
+            return $users->reject(function ($u) {
+                return $u->id == $this->id;
+            });
         });
+    }
 
-        Storage::disk('local')->put('users.json', json_encode($users->values()->toArray(), JSON_PRETTY_PRINT));
+    /**
+     * Helper to safely update the users.json file with locking.
+     */
+    protected function updateFile(callable $callback)
+    {
+        $path = Storage::disk('local')->path('users.json');
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $fp = fopen($path, 'c+');
+        if (!$fp) {
+            throw new \Exception("Could not open users.json for writing.");
+        }
+
+        // Exclusive lock (wait until available)
+        flock($fp, LOCK_EX);
+
+        try {
+            // Read current data
+            clearstatcache(true, $path);
+            $size = filesize($path);
+            $content = $size > 0 ? fread($fp, $size) : '[]';
+            $data = json_decode($content, true) ?: [];
+            $users = collect($data)->map(fn ($u) => new static($u));
+
+            // Apply changes via callback
+            $updatedUsers = $callback($users);
+
+            // Write back
+            ftruncate($fp, 0);
+            rewind($fp);
+            fwrite($fp, json_encode($updatedUsers->values()->toArray(), JSON_PRETTY_PRINT));
+            fflush($fp);
+        } finally {
+            // Release lock and close
+            flock($fp, LOCK_UN);
+            fclose($fp);
+        }
     }
 
     public function getAuthIdentifierName() { return 'id'; }

@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.auth' => \App\Http\Middleware\CheckApiKey::class,
         ]);
         $middleware->web(append: [
+            \App\Http\Middleware\SetLanguage::class,
             \App\Http\Middleware\CheckMaintenance::class,
         ]);
     })

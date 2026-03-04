@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,6 +14,8 @@ class NetworkController extends Controller
             abort(403);
         }
 
+        $services = Service::all();
+        
         // Try 'ss' first as it's the modern replacement for netstat
         $output = shell_exec('ss -tulnp 2>/dev/null');
         
@@ -26,18 +29,13 @@ class NetworkController extends Controller
             foreach ($lines as $line) {
                 if (empty(trim($line))) continue;
                 
-                // Example line:
-                // tcp   LISTEN 0      128      0.0.0.0:80         0.0.0.0:*      users:(("nginx",pid=1234,fd=6))
-                
-                // Replace multiple spaces with a single space
                 $line = preg_replace('/\s+/', ' ', $line);
                 $parts = explode(' ', $line);
                 
                 if (count($parts) >= 6) {
                     $protocol = $parts[0];
-                    $state = $parts[1];
                     $localAddress = $parts[4] ?? '';
-                    $processInfo = implode(' ', array_slice($parts, 6)) ?? 'Unknown';
+                    $processInfo = implode(' ', array_slice($parts, 6));
                     
                     // Extract port
                     $port = '';
@@ -55,12 +53,32 @@ class NetworkController extends Controller
                     }
 
                     if ($port && is_numeric($port)) {
+                        // Find if it belongs to a panel service
+                        $owningService = null;
+                        foreach ($services as $s) {
+                            if ($s->type === 'docker') {
+                                foreach ($s->docker_ports ?? [] as $dp) {
+                                    $hostPort = explode(':', $dp)[0];
+                                    if ($hostPort == $port) {
+                                        $owningService = $s;
+                                        break 2;
+                                    }
+                                }
+                            } else {
+                                if ($s->pid == $pid) {
+                                    $owningService = $s;
+                                    break;
+                                }
+                            }
+                        }
+
                         $ports[] = [
                             'protocol' => strtoupper($protocol),
-                            'port' => $port,
+                            'port' => (int)$port,
                             'address' => str_replace(':' . $port, '', $localAddress),
                             'process' => $processName,
                             'pid' => $pid,
+                            'service' => $owningService,
                         ];
                     }
                 }
@@ -68,9 +86,9 @@ class NetworkController extends Controller
         }
         
         // Sort by port number
-        usort($ports, fn($a, $b) => (int)$a['port'] - (int)$b['port']);
+        usort($ports, fn($a, $b) => $a['port'] - $b['port']);
         
-        // Remove duplicates (sometimes ss shows multiple lines for same process/port)
+        // Remove duplicates
         $uniquePorts = [];
         $seen = [];
         foreach ($ports as $p) {

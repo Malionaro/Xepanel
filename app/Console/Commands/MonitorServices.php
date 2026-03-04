@@ -148,6 +148,63 @@ class MonitorServices extends Command
                     }
                 }
             }
+
+            // --- Long-Term Metrics (24h) ---
+            if ($service->getStatus() === 'running') {
+                $this->saveLongTermMetrics($service);
+            }
         }
+    }
+
+    protected function saveLongTermMetrics($service)
+    {
+        $cpu = 0.0;
+        $ramRaw = 0.0;
+
+        if ($service->type === 'docker') {
+            $containerName = escapeshellarg($service->docker_container_name);
+            $output = shell_exec("docker stats --no-stream --format '{{.CPUPerc}},{{.MemUsage}}' {$containerName} 2>/dev/null");
+            if ($output) {
+                $parts = explode(',', trim($output));
+                $cpu = (float)str_replace('%', '', $parts[0] ?? '0');
+                $ramText = explode('/', $parts[1] ?? '0MB')[0];
+                if (preg_match('/([0-9\.]+)\s*(MB|GB|B|KiB|MiB|GiB)/i', $ramText, $matches)) {
+                    $val = (float)$matches[1];
+                    $unit = strtoupper($matches[2]);
+                    if ($unit === 'GB' || $unit === 'GIB') $val *= 1024;
+                    if ($unit === 'B') $val /= (1024 * 1024);
+                    if ($unit === 'KIB' || $unit === 'KB') $val /= 1024;
+                    $ramRaw = $val;
+                }
+            }
+        } else {
+            if ($service->pid) {
+                $output = shell_exec("ps -p " . escapeshellarg($service->pid) . " -o %cpu,rss --no-headers");
+                if ($output) {
+                    $parts = preg_split('/\s+/', trim($output));
+                    $cpu = (float)($parts[0] ?? 0);
+                    $ramRaw = ((int)($parts[1] ?? 0)) / 1024;
+                }
+            }
+        }
+
+        $path = "metrics_24h/{$service->id}.json";
+        $history = [];
+        if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+            $history = json_decode(\Illuminate\Support\Facades\Storage::disk('local')->get($path), true) ?: [];
+        }
+
+        $history[] = [
+            'time' => now()->format('Y-m-d H:i'),
+            'cpu' => round($cpu, 1),
+            'ram' => round($ramRaw, 1)
+        ];
+
+        // Keep last 288 entries (5-min intervals * 12 * 24 hours)
+        if (count($history) > 288) {
+            array_shift($history);
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('local')->put($path, json_encode($history));
     }
 }

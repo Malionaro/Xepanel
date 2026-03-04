@@ -23,15 +23,18 @@ class AuthController extends Controller
 
         if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->getAuthPassword())) {
             if ($user->two_factor_enabled) {
-                // Intercept for 2FA
                 $request->session()->put('2fa_user_id', $user->id);
+                \App\Models\ActivityLog::log("2FA Challenge", "User: {$user->email}");
                 return redirect()->route('two-factor.prompt');
             }
 
             Auth::login($user);
             $request->session()->regenerate();
+            \App\Models\ActivityLog::log("User Logged In", "Method: Password");
             return redirect()->intended('dashboard');
         }
+
+        \App\Models\ActivityLog::log("Failed Login Attempt", "Email: " . $credentials['email']);
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',

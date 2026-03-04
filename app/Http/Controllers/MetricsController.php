@@ -132,4 +132,13 @@ class MetricsController extends Controller
         }
         return response()->json(json_decode(\Illuminate\Support\Facades\Storage::disk('local')->get($path), true));
     }
+
+    public function getServiceHistory24h($id)
+    {
+        $path = "metrics_24h/{$id}.json";
+        if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+            return response()->json([]);
+        }
+        return response()->json(json_decode(\Illuminate\Support\Facades\Storage::disk('local')->get($path), true));
+    }
 }

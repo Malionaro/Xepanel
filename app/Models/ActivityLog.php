@@ -24,6 +24,7 @@ class ActivityLog
             'action' => $action,
             'details' => $details,
             'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
             'timestamp' => now()->toDateTimeString()
         ]);
         

@@ -19,6 +19,13 @@ class Egg
     public $start_command;
     public $stop_command;
     public $tags;
+    
+    // New Extended Fields
+    public $icon = 'box';
+    public $install_script = '';
+    public $default_ram_mb = 1024;
+    public $default_cpu_percent = 100;
+    public $default_disk_mb = 5120;
 
     public function __construct(array $attributes = [])
     {

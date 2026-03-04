@@ -57,14 +57,14 @@ class ServiceController extends Controller
             'type' => 'required|in:process,docker',
             'name' => 'required|string',
             'working_dir' => 'required_if:type,process|string|nullable',
-            'start_command' => 'required_if:type,process|string|nullable',
+            'start_command' => 'nullable|string',
             'stop_command' => 'nullable|string',
             'env_vars' => 'nullable|array',
             'auto_restart' => 'nullable|boolean',
             'webhook_url' => 'nullable|url',
             'tags' => 'nullable|string',
             'installer_script' => 'nullable|string',
-            'docker_image' => 'required_if:type,docker|string|nullable',
+            'docker_image' => 'nullable|string',
             'docker_main_mount' => 'nullable|string',
             'docker_ports' => 'nullable|string',
             'docker_volumes' => 'nullable|string',
@@ -72,55 +72,69 @@ class ServiceController extends Controller
             'docker_container_name' => 'nullable|string',
         ]);
 
+        $egg = null;
+        if (!empty($data['egg_id'])) {
+            $egg = Egg::find($data['egg_id']);
+        }
+
         $service = new Service($data);
         $service->egg_id = $data['egg_id'] ?? null;
-        $service->type = $data['type'];
+        
+        // Use Egg defaults if fields are empty
+        if ($egg) {
+            if (empty($data['start_command'])) $service->start_command = $egg->start_command;
+            if (empty($data['stop_command'])) $service->stop_command = $egg->stop_command;
+            if (empty($data['docker_image']) && $egg->type === 'docker') $service->docker_image = $egg->docker_image;
+            if (empty($data['docker_main_mount']) && $egg->type === 'docker') $service->docker_main_mount = $egg->docker_main_mount;
+            if (empty($data['docker_ports']) && $egg->type === 'docker') $data['docker_ports'] = $egg->docker_ports;
+            if (empty($data['docker_network']) && $egg->type === 'docker') $service->docker_network = $egg->docker_network;
+            
+            // Auto-populate variables from Egg to env_vars
+            foreach ($egg->variables ?? [] as $v) {
+                if (!isset($service->env_vars[$v['key']])) {
+                    $service->env_vars[$v['key']] = $v['default'] ?? '';
+                }
+            }
+        }
+
         $service->auto_restart = (bool)$request->has('auto_restart');
-        $service->webhook_url = $data['webhook_url'] ?? null;
-        $service->installer_script = $data['installer_script'] ?? null;
         
         if (!empty($data['tags'])) {
             $service->tags = array_map('trim', explode(',', $data['tags']));
         }
 
         if ($service->type === 'docker') {
-            $service->docker_main_mount = $data['docker_main_mount'] ?? '/app';
+            $service->docker_main_mount = $service->docker_main_mount ?? '/app';
             if (!empty($data['docker_ports'])) {
                 $service->docker_ports = array_map('trim', explode(',', $data['docker_ports']));
             }
             if (!empty($data['docker_volumes'])) {
                 $service->docker_volumes = array_map('trim', explode(',', $data['docker_volumes']));
             }
-            $service->docker_network = $data['docker_network'] ?? 'bridge';
-            $service->docker_container_name = $data['docker_container_name'] ?? null;
+            $service->docker_network = $service->docker_network ?? 'bridge';
         }
 
         $service->save();
 
-        // Handle Auto-Installer Scripts (only for process type)
-        if ($service->type === 'process' && $request->filled('installer_script')) {
-            $script = $request->input('installer_script');
+        // Handle Installation Script from Egg or Manual
+        $installScript = $egg->install_script ?? $data['installer_script'] ?? null;
+        if ($installScript) {
             $logPath = storage_path("logs/services/{$service->id}.log");
-            $cwd = escapeshellarg($service->working_dir);
+            $cwd = $service->type === 'process' ? escapeshellarg($service->working_dir) : escapeshellarg(storage_path("app/docker/{$service->id}"));
             
-            $commands = [
-                'nodejs' => 'npm install',
-                'composer' => 'composer install',
-                'minecraft' => 'wget -O server.jar https://piston-data.mojang.com/v1/objects/4707d00eb8343d1a24413707cb4f6fa38d2cdca4/server.jar && echo "eula=true" > eula.txt',
-                'python' => 'pip install -r requirements.txt',
-            ];
+            // Create a temporary script file
+            $tmpScript = storage_path("app/temp_install_{$service->id}.sh");
+            file_put_contents($tmpScript, "#!/bin/bash\n" . $installScript);
+            chmod($tmpScript, 0755);
 
-            if (isset($commands[$script])) {
-                $cmd = $commands[$script];
-                $fullCmd = "cd {$cwd} && (echo '--- STARTING AUTO-INSTALLER: {$cmd} ---' && {$cmd}) >> " . escapeshellarg($logPath) . " 2>&1 &";
-                shell_exec($fullCmd);
-                ActivityLog::log("Running Auto-Installer", "Service: {$service->name}, Script: {$script}");
-            }
+            $fullCmd = "cd {$cwd} && (echo '--- STARTING INSTALLATION SCRIPT ---' && {$tmpScript}) >> " . escapeshellarg($logPath) . " 2>&1 && rm {$tmpScript} &";
+            shell_exec($fullCmd);
+            ActivityLog::log("Running Installation Script", "Service: {$service->name}");
         }
 
         ActivityLog::log("Created service", "Service: " . $service->name);
 
-        return redirect()->route('dashboard')->with('status', 'Service created!');
+        return redirect()->route('dashboard')->with('status', 'Service creation initiated!');
     }
 
     public function show($id)
@@ -242,11 +256,20 @@ class ServiceController extends Controller
             }
 
             if (($currentRam + $thisVal) > ($user->max_ram_mb ?? 4096)) {
-                return back()->withErrors(['error' => 'Quota Exceeded: You do not have enough RAM left to start this service. (Used: ' . $currentRam . 'MB, Limit: ' . ($user->max_ram_mb ?? 4096) . 'MB)']);
+                return back()->withErrors(['error' => 'Quota Exceeded: You do not have enough RAM left to start this service.']);
             }
         }
 
-        $service->start();
+        try {
+            // Perform all logic that needs the session BEFORE this
+            session_write_close(); 
+            $service->start();
+        } catch (\Exception $e) {
+            // If an exception happens, we might need to restart the session to show errors
+            @session_start();
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+
         ActivityLog::log("Started service", "Service: " . $service->name);
         return back();
     }
@@ -256,6 +279,7 @@ class ServiceController extends Controller
         $service = Service::find($id);
         if ($service) {
             $this->checkAccess($service);
+            session_write_close(); // CRITICAL: Release session lock
             $service->stop();
             ActivityLog::log("Stopped service", "Service: " . $service->name);
         }
@@ -270,6 +294,7 @@ class ServiceController extends Controller
             $services = $services->filter(fn($s) => isset($s->allowed_users) && in_array($user->id, $s->allowed_users));
         }
 
+        session_write_close();
         $count = 0;
         foreach ($services as $service) {
             if ($service->getStatus() === 'stopped') {
@@ -289,6 +314,7 @@ class ServiceController extends Controller
             $services = $services->filter(fn($s) => isset($s->allowed_users) && in_array($user->id, $s->allowed_users));
         }
 
+        session_write_close();
         $count = 0;
         foreach ($services as $service) {
             if ($service->getStatus() === 'running') {
@@ -546,6 +572,7 @@ WantedBy=multi-user.target";
             return back()->withErrors(['error' => 'No auto-installer script is associated with this service.']);
         }
 
+        session_write_close();
         $logPath = storage_path("logs/services/{$service->id}.log");
         $cwd = escapeshellarg($service->working_dir);
         

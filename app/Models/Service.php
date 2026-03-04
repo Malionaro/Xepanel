@@ -9,8 +9,8 @@ use Symfony\Component\Process\Process;
 class Service
 {
     public $id;
-    public $egg_id; // Keep track of the egg template
-    public $type = 'process'; // 'process' or 'docker'
+    public $egg_id;
+    public $type = 'process';
     public $name;
     public $working_dir;
     public $start_command;
@@ -29,11 +29,13 @@ class Service
 
     // Docker specific fields
     public $docker_image;
-    public $docker_ports = []; // e.g., ["80:80"]
-    public $docker_volumes = []; // Additional volumes
-    public $docker_main_mount = '/app'; // The main data directory mapping inside the container
+    public $docker_ports = [];
+    public $docker_volumes = [];
+    public $docker_main_mount = '/app';
     public $docker_container_name;
     public $docker_network = 'bridge';
+
+    protected static $statusCache = [];
 
     public function __construct(array $attributes = [])
     {
@@ -69,9 +71,8 @@ class Service
         }
         Storage::disk('local')->put("services/{$this->id}.json", json_encode($this, JSON_PRETTY_PRINT));
         
-        // Ensure working directory or Docker data directory exists
         if ($this->type === 'process' && $this->working_dir && !is_dir($this->working_dir)) {
-            mkdir($this->working_dir, 0775, true);
+            @mkdir($this->working_dir, 0775, true);
         } elseif ($this->type === 'docker') {
             $basePath = Setting::get('docker_base_path', storage_path('app/docker'));
             $dataDir = $basePath . '/' . $this->id;
@@ -84,78 +85,135 @@ class Service
     public function delete()
     {
         if ($this->type === 'docker') {
-            // Stop and remove container
             shell_exec("docker rm -f " . escapeshellarg($this->docker_container_name));
-            
-            // Remove data directory
             $basePath = Setting::get('docker_base_path', storage_path('app/docker'));
             $dataDir = $basePath . '/' . $this->id;
-            if (is_dir($dataDir)) {
-                shell_exec("rm -rf " . escapeshellarg($dataDir));
-            }
+            if (is_dir($dataDir)) { shell_exec("rm -rf " . escapeshellarg($dataDir)); }
         } else {
-            // Remove working directory for process services
-            if ($this->working_dir && is_dir($this->working_dir)) {
-                shell_exec("rm -rf " . escapeshellarg($this->working_dir));
-            }
+            if ($this->working_dir && is_dir($this->working_dir)) { shell_exec("rm -rf " . escapeshellarg($this->working_dir)); }
         }
-
-        // Delete the configuration file
         Storage::disk('local')->delete("services/{$this->id}.json");
-        
-        // Delete logs
         $logPath = storage_path("logs/services/{$this->id}.log");
-        if (file_exists($logPath)) {
-            @unlink($logPath);
-        }
+        if (file_exists($logPath)) { @unlink($logPath); }
     }
 
     public function getStatus()
     {
+        $cacheKey = $this->id;
+        if (isset(static::$statusCache[$cacheKey]) && (time() - static::$statusCache[$cacheKey]['time'] < 2)) {
+            return static::$statusCache[$cacheKey]['status'];
+        }
+
+        $oldStatus = $this->status;
+        $currentStatus = 'stopped';
+
         if ($this->type === 'docker') {
             $containerName = escapeshellarg($this->docker_container_name);
-            $status = trim(shell_exec("docker inspect -f '{{.State.Running}}' {$containerName} 2>/dev/null"));
-            return $status === 'true' ? 'running' : 'stopped';
+            $inspect = shell_exec("timeout 2 docker inspect -f '{{.State.Running}}' {$containerName} 2>/dev/null");
+            $currentStatus = trim($inspect) === 'true' ? 'running' : 'stopped';
+        } else {
+            if ($this->pid) {
+                $processRunning = @posix_kill($this->pid, 0);
+                if ($processRunning) {
+                    $currentStatus = 'running';
+                } else {
+                    $this->pid = null;
+                    $currentStatus = 'stopped';
+                }
+            }
         }
 
-        if (!$this->pid) return 'stopped';
-        
-        // Use kill -0 to safely check if the process exists without sending a signal
-        $processRunning = @posix_kill($this->pid, 0);
-
-        if ($processRunning) {
-            return 'running';
+        if ($oldStatus === 'running' && $currentStatus === 'stopped') {
+            $this->status = 'stopped';
+            $this->save();
+            $this->handleCrash();
         }
-        
-        // If we reach here, the process died unexpectedly
-        $this->pid = null;
-        return 'stopped';
+
+        static::$statusCache[$cacheKey] = ['status' => $currentStatus, 'time' => time()];
+        return $currentStatus;
+    }
+
+    protected function handleCrash()
+    {
+        $logPath = storage_path("logs/services/{$this->id}.log");
+        $logSnippet = file_exists($logPath) ? shell_exec("tail -n 50 " . escapeshellarg($logPath)) : "No log found.";
+        $analysis = $this->performCrashAnalysis($logSnippet);
+        $this->crash_logs[] = [
+            'id' => uniqid(),
+            'timestamp' => now()->toDateTimeString(),
+            'log_snippet' => $logSnippet,
+            'analysis' => $analysis['message'],
+            'suggestion' => $analysis['suggestion'],
+            'type' => $analysis['type']
+        ];
+        if (count($this->crash_logs) > 10) { array_shift($this->crash_logs); }
+        $this->save();
+        \App\Models\ActivityLog::log("CRASH DETECTED", "Service: {$this->name}");
+        if ($this->auto_restart) { $this->start(); }
+    }
+
+    protected function performCrashAnalysis($log)
+    {
+        $patterns = [
+            'out_of_memory' => ['regex' => '/OutOfMemoryError|killed|OOM/i', 'message' => 'Service was killed due to Out-of-Memory (OOM).', 'suggestion' => 'Increase the RAM limit.'],
+            'port_in_use' => ['regex' => '/Address already in use|EADDRINUSE/i', 'message' => 'Port already occupied.', 'suggestion' => 'Change the port settings.'],
+            'eula_missing' => ['regex' => '/eula=false|accept the EULA/i', 'message' => 'EULA not accepted.', 'suggestion' => 'Set EULA=TRUE.'],
+            'permission_denied' => ['regex' => '/Permission denied|EACCES/i', 'message' => 'Permission error.', 'suggestion' => 'Check file permissions.'],
+        ];
+        foreach ($patterns as $type => $data) {
+            if (preg_match($data['regex'], $log)) { return array_merge($data, ['type' => $type]); }
+        }
+        return ['type' => 'unknown', 'message' => 'Unknown error.', 'suggestion' => 'Check logs.'];
     }
 
     public function start()
     {
         if ($this->getStatus() === 'running') return;
-
-        if ($this->type === 'docker') {
-            $this->startDocker();
-        } else {
-            $this->startProcess();
+        if ($this->type === 'docker' && !empty($this->docker_ports)) {
+            foreach ($this->docker_ports as $portMapping) {
+                $hostPort = explode(':', $portMapping)[0];
+                if ($this->isPortTaken($hostPort)) { throw new \Exception("Port {$hostPort} is already in use."); }
+            }
         }
+        if ($this->type === 'docker') { $this->startDocker(); } else { $this->startProcess(); }
+    }
+
+    public function isPortTaken($port)
+    {
+        $check = shell_exec("ss -tuln | grep -q ':" . escapeshellarg($port) . " ' && echo 'taken'");
+        return trim($check) === 'taken';
     }
 
     protected function startProcess()
     {
-        $process = Process::fromShellCommandline($this->start_command, $this->working_dir);
-        $process->setEnv($this->env_vars);
-        $process->setTimeout(null);
+        $logPath = storage_path("logs/services/{$this->id}.log");
+        $cwd = escapeshellarg($this->working_dir);
+        $scriptPath = storage_path("app/run_{$this->id}.sh");
+
+        // Create a dedicated start script
+        $scriptContent = "#!/bin/bash\n";
+        $scriptContent .= "cd {$cwd}\n";
+        $scriptContent .= "nohup {$this->start_command} >> " . escapeshellarg($logPath) . " 2>&1 & echo $! > " . escapeshellarg($scriptPath . ".pid") . "\n";
         
-        // Use nohup to keep it running
-        $command = "nohup {$this->start_command} > " . storage_path("logs/services/{$this->id}.log") . " 2>&1 & echo $!";
-        $pid = shell_exec("cd " . escapeshellarg($this->working_dir) . " && " . $command);
+        file_put_contents($scriptPath, $scriptContent);
+        chmod($scriptPath, 0755);
+
+        // Execute the script and immediately disconnect
+        exec("nohup {$scriptPath} > /dev/null 2>&1 &");
         
-        $this->pid = (int) trim($pid);
+        // Wait a tiny bit for the PID file
+        for ($i = 0; $i < 10; $i++) {
+            if (file_exists($scriptPath . ".pid")) {
+                $this->pid = (int) trim(file_get_contents($scriptPath . ".pid"));
+                @unlink($scriptPath . ".pid");
+                break;
+            }
+            usleep(10000);
+        }
+
         $this->status = 'running';
         $this->save();
+        @unlink($scriptPath);
     }
 
     protected function startDocker()
@@ -163,88 +221,44 @@ class Service
         $containerName = escapeshellarg($this->docker_container_name);
         $image = escapeshellarg($this->docker_image);
         $logPath = storage_path("logs/services/{$this->id}.log");
-        
-        // Ensure log directory exists
-        if (!is_dir(dirname($logPath))) {
-            @mkdir(dirname($logPath), 0775, true);
-        }
+        $scriptPath = storage_path("app/start_docker_{$this->id}.sh");
 
-        $ports = "";
-        foreach ($this->docker_ports as $port) {
-            $ports .= "-p " . escapeshellarg($port) . " ";
-        }
-
+        $ports = ""; foreach ($this->docker_ports as $port) { $ports .= "-p " . escapeshellarg($port) . " "; }
         $basePath = Setting::get('docker_base_path', storage_path('app/docker'));
         $hostDataDir = $basePath . '/' . $this->id;
-        
-        // Ensure data directory exists
-        if (!is_dir($hostDataDir)) {
-            @mkdir($hostDataDir, 0775, true);
-        }
-
         $volumes = "-v " . escapeshellarg($hostDataDir . ":" . ($this->docker_main_mount ?: '/app')) . " ";
-
-        foreach ($this->docker_volumes as $volume) {
-            $volumes .= "-v " . escapeshellarg($volume) . " ";
-        }
-
-        $envs = "";
-        $envVars = $this->env_vars ?? [];
+        foreach ($this->docker_volumes as $volume) { $volumes .= "-v " . escapeshellarg($volume) . " "; }
+        $envs = ""; foreach ($this->env_vars ?? [] as $key => $value) { $envs .= "-e " . escapeshellarg("{$key}={$value}") . " "; }
         
-        // Failsafe for Minecraft EULA
-        if (str_contains(strtolower($image), 'minecraft') && !isset($envVars['EULA'])) {
-            $envVars['EULA'] = 'TRUE';
-        }
+        // Build the full background script
+        $fullCmd = "docker rm -f {$containerName} > /dev/null 2>&1; ";
+        $fullCmd .= "docker pull {$image} >> " . escapeshellarg($logPath) . " 2>&1; ";
+        $fullCmd .= "docker run -d --name {$containerName} {$ports} {$volumes} {$envs} --network " . escapeshellarg($this->docker_network) . " {$image} {$this->start_command} >> " . escapeshellarg($logPath) . " 2>&1";
 
-        foreach ($envVars as $key => $value) {
-            $envs .= "-e " . escapeshellarg("{$key}={$value}") . " ";
-        }
+        file_put_contents($scriptPath, "#!/bin/bash\n" . $fullCmd);
+        chmod($scriptPath, 0755);
 
-        // Parse start_command for ENV variables (e.g., EULA=TRUE MEMORY=2G)
-        $finalCommandParts = [];
-        if ($this->start_command) {
-            $parts = explode(' ', $this->start_command);
-            foreach ($parts as $part) {
-                if (str_contains($part, '=')) {
-                    $envs .= "-e " . escapeshellarg($part) . " ";
-                } else {
-                    $finalCommandParts[] = $part;
-                }
-            }
-        }
-
-        $finalCommand = implode(' ', array_map('escapeshellarg', array_filter($finalCommandParts)));
-
-        // Create the background command chain
-        $fullCmd = "docker rm -f {$containerName} > /dev/null 2>&1; docker pull {$image} && docker run -d --name {$containerName} {$ports} {$volumes} {$envs} --network " . escapeshellarg($this->docker_network) . " {$image}";
-        if (trim($finalCommand)) {
-            $fullCmd .= " " . $finalCommand;
-        }
-        
-        // Wrap in bash -c and use nohup for background execution
-        $bashCmd = "bash -c " . escapeshellarg($fullCmd);
-        shell_exec("nohup {$bashCmd} >> " . escapeshellarg($logPath) . " 2>&1 &");
+        // Execute and forget
+        exec("nohup {$scriptPath} > /dev/null 2>&1 &");
 
         $this->status = 'running';
         $this->save();
+        // The script will be deleted by the system or next run, we leave it for a second to ensure it starts
     }
 
     public function stop()
     {
         if ($this->getStatus() === 'stopped') return;
-
         if ($this->type === 'docker') {
-            shell_exec("docker stop " . escapeshellarg($this->docker_container_name));
+            exec("nohup docker stop " . escapeshellarg($this->docker_container_name) . " > /dev/null 2>&1 &");
         } else {
             if ($this->stop_command) {
-                $process = Process::fromShellCommandline($this->stop_command, $this->working_dir);
-                $process->run();
-            } else {
+                exec("nohup bash -c 'cd " . escapeshellarg($this->working_dir) . " && {$this->stop_command}' > /dev/null 2>&1 &");
+            } elseif ($this->pid) {
                 posix_kill($this->pid, SIGTERM);
             }
             $this->pid = null;
         }
-
         $this->status = 'stopped';
         $this->save();
     }

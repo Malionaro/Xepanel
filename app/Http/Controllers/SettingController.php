@@ -30,6 +30,7 @@ class SettingController extends Controller
         $request->validate([
             'panel_name' => 'required|string|max:255',
             'docker_base_path' => 'required|string',
+            'global_webhook_url' => 'nullable|url',
         ]);
 
         // Explicitly collect data to ensure booleans are correct
@@ -44,10 +45,28 @@ class SettingController extends Controller
             'default_timezone' => $request->input('default_timezone', 'UTC'),
             'docker_default_network' => $request->input('docker_default_network', 'bridge'),
             'ui_theme' => $request->input('ui_theme', 'system'),
+            'panel_language' => $request->input('panel_language', 'en'),
+            'global_webhook_url' => $request->input('global_webhook_url'),
+            'discord_bot_token' => $request->input('discord_bot_token'),
+            'discord_public_key' => $request->input('discord_public_key'),
+            'discord_client_id' => $request->input('discord_client_id'),
+            'default_user_ram_mb' => (int) $request->input('default_user_ram_mb', 4096),
+            'default_user_cpu_percent' => (int) $request->input('default_user_cpu_percent', 200),
+            'default_user_disk_mb' => (int) $request->input('default_user_disk_mb', 10240),
+            'default_user_services' => (int) $request->input('default_user_services', 5),
+            'session_lifetime' => (int) $request->input('session_lifetime', 120),
+            'allow_registration' => $request->has('allow_registration'),
+            'branding_logo_url' => $request->input('branding_logo_url'),
         ];
 
         // Save everything at once
         Setting::setMany($data);
+
+        // Immediately update session locale for instant feedback
+        if (isset($data['panel_language'])) {
+            session(['locale' => $data['panel_language']]);
+            \App::setLocale($data['panel_language']);
+        }
 
         ActivityLog::log("Updated Global Settings", "User: " . Auth::user()->name . " (Maintenance: " . ($data['maintenance_mode'] ? 'ON' : 'OFF') . ")");
 
