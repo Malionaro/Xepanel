@@ -21,21 +21,29 @@
     </div>
 
     <!-- Navigation Pill -->
-    <div class="flex justify-center">
+    <div class="flex flex-col items-center space-y-6">
         <div class="relative flex items-center p-1.5 glass dark:bg-[#0f172a]/80 border-slate-200 dark:border-white/10 rounded-full shadow-2xl">
             <div id="customer-nav-indicator" class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-brand-500 rounded-full shadow-lg shadow-brand-500/20 transition-transform duration-500 z-0"></div>
-            <button onclick="moveIndicator(0)" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors duration-300">
+            <button onclick="moveIndicator(0); hideSearch();" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors duration-300">
                 <div class="flex items-center justify-center space-x-2">
                     <i data-lucide="layers" class="w-4 h-4"></i>
                     <span>All Servers</span>
                 </div>
             </button>
-            <button onclick="moveIndicator(1)" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+            <button onclick="moveIndicator(1); showSearch();" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <div class="flex items-center justify-center space-x-2">
-                    <i data-lucide="filter" class="w-4 h-4"></i>
+                    <i data-lucide="search" class="w-4 h-4"></i>
                     <span>Filter</span>
                 </div>
             </button>
+        </div>
+
+        <!-- Hidden Search Bar -->
+        <div id="search-container" class="max-w-md w-full opacity-0 -translate-y-4 pointer-events-none transition-all duration-500 ease-out h-0 overflow-hidden">
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" id="service-search" onkeyup="filterServices()" placeholder="Search infrastructure by name..." class="w-full bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm glass">
+            </div>
         </div>
     </div>
 
@@ -43,7 +51,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10" id="customer-grid">
         @forelse($services as $service)
             @php $isRunning = $service->getStatus() == 'running'; @endphp
-            <div class="group relative">
+            <div class="group relative service-card-wrapper" data-name="{{ strtolower($service->name) }}">
                 <!-- Status Glow Effect -->
                 <div class="absolute -inset-0.5 bg-gradient-to-r {{ $isRunning ? 'from-green-500/50 to-emerald-600/50' : 'from-slate-400/20 to-slate-500/20' }} rounded-[3.2rem] opacity-0 group-hover:opacity-100 blur-xl transition duration-500"></div>
                 
@@ -115,7 +123,7 @@
                 </div>
             </div>
         @empty
-            <div class="col-span-full py-32 text-center glass rounded-[4rem] border-dashed border-2 border-slate-200 dark:border-white/10">
+            <div class="col-span-full py-32 text-center glass rounded-[4rem] border-dashed border-2 border-slate-200 dark:border-white/10" id="no-services-placeholder">
                 <div class="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 dark:text-slate-700">
                     <i data-lucide="server-off" class="w-10 h-10"></i>
                 </div>
@@ -134,6 +142,43 @@
         tabs.forEach((tab, i) => {
             tab.className = `nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${i === index ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`;
         });
+    }
+
+    function showSearch() {
+        const container = document.getElementById('search-container');
+        container.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none', 'h-0');
+        container.classList.add('opacity-100', 'translate-y-0', 'h-auto', 'mb-10');
+        document.getElementById('service-search').focus();
+    }
+
+    function hideSearch() {
+        const container = document.getElementById('search-container');
+        container.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none', 'h-0');
+        container.classList.remove('opacity-100', 'translate-y-0', 'h-auto', 'mb-10');
+        document.getElementById('service-search').value = '';
+        filterServices();
+    }
+
+    function filterServices() {
+        const query = document.getElementById('service-search').value.toLowerCase();
+        const cards = document.querySelectorAll('.service-card-wrapper');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            if (name.includes(query)) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Toggle empty state if needed
+        const emptyState = document.getElementById('no-services-placeholder');
+        if (emptyState) {
+            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
     }
 
     if(typeof lucide !== 'undefined') lucide.createIcons();

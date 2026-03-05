@@ -218,7 +218,8 @@ class Service
 
     protected function startDocker()
     {
-        $containerName = escapeshellarg($this->docker_container_name);
+        $rawName = $this->docker_container_name;
+        $containerName = escapeshellarg($rawName);
         $image = escapeshellarg($this->docker_image);
         $logPath = storage_path("logs/services/{$this->id}.log");
         $scriptPath = storage_path("app/start_docker_{$this->id}.sh");
@@ -231,7 +232,6 @@ class Service
         $envs = ""; 
         $envVars = $this->env_vars ?? [];
 
-        // Auto-accept EULA for Minecraft servers if image matches
         if (str_contains(strtolower($this->docker_image), 'minecraft') && !isset($envVars['EULA'])) {
             $envVars['EULA'] = 'TRUE';
         }
@@ -240,20 +240,34 @@ class Service
             $envs .= "-e " . escapeshellarg("{$key}={$value}") . " "; 
         }
 
-        // Build the full background script
+        $finalStartCmd = trim($this->start_command);
+        if (str_contains($image, 'minecraft-server') && str_starts_with($finalStartCmd, '-')) {
+            $finalStartCmd = "";
+        }
+
         $fullCmd = "#!/bin/bash\n";
-        $fullCmd .= "docker rm -f {$containerName} > /dev/null 2>&1\n";
-        $fullCmd .= "docker pull {$image} >> " . escapeshellarg($logPath) . " 2>&1\n";
-        $fullCmd .= "docker run -d --name {$containerName} {$ports} {$volumes} {$envs} --network " . escapeshellarg($this->docker_network) . " {$image} {$this->start_command} >> " . escapeshellarg($logPath) . " 2>&1\n";
+        $fullCmd .= "log=\"" . $logPath . "\"\n";
+        $fullCmd .= "name=\"" . $rawName . "\"\n";
+        
+        // Robust check for existing container without double escaping issues
+        $fullCmd .= "if [ ! \"$(docker ps -a -q -f name=^${name}$)\" ]; then\n";
+        $fullCmd .= "    echo \"[Panel] Creating new container...\" >> \"$log\"\n";
+        $fullCmd .= "    docker pull {$image} >> \"$log\" 2>&1\n";
+        $fullCmd .= "    docker run -d --name \"$name\" {$ports} {$volumes} {$envs} --network " . escapeshellarg($this->docker_network) . " {$image} {$finalStartCmd} >> \"$log\" 2>&1\n";
+        $fullCmd .= "else\n";
+        $fullCmd .= "    echo \"[Panel] Reusing existing container...\" >> \"$log\"\n";
+        $fullCmd .= "    docker start \"$name\" >> \"$log\" 2>&1\n";
+        $fullCmd .= "fi\n";
 
-        file_put_contents($scriptPath, $fullCmd);        chmod($scriptPath, 0755);
+        file_put_contents($scriptPath, $fullCmd);
+        chmod($scriptPath, 0755);
 
-        // Execute and forget
         exec("nohup {$scriptPath} > /dev/null 2>&1 &");
 
+        // Try to get the Container ID immediately for the UI
+        $this->pid = trim(shell_exec("docker ps -a -q -f name=^" . escapeshellarg($rawName) . "$"));
         $this->status = 'running';
         $this->save();
-        // The script will be deleted by the system or next run, we leave it for a second to ensure it starts
     }
 
     public function stop()

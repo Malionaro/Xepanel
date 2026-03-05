@@ -36,6 +36,26 @@
                     </span>
                 </div>
                 <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white">{{ $service->name }}</h2>
+                
+                @php
+                    $displayIp = request()->getHost();
+                    $displayPort = '';
+                    if ($service->type === 'docker' && !empty($service->docker_ports)) {
+                        $displayPort = explode(':', $service->docker_ports[0])[0];
+                    }
+                    $fullAddress = $displayPort ? $displayIp . ':' . $displayPort : $displayIp;
+                @endphp
+
+                <div class="mt-4">
+                    <button onclick="navigator.clipboard.writeText('{{ $fullAddress }}'); this.querySelector('span').textContent = 'COPIED!'; setTimeout(() => this.querySelector('span').textContent = '{{ $fullAddress }}', 2000)" 
+                            class="group flex items-center space-x-3 px-4 py-2 rounded-2xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-brand-500/50 transition-all shadow-sm glass">
+                        <div class="w-8 h-8 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-500">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-xs font-mono font-black text-slate-600 dark:text-slate-300 tracking-wider">{{ $fullAddress }}</span>
+                        <div class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/10 text-[8px] font-black uppercase text-slate-400 group-hover:text-brand-500 transition-colors">Click to copy</div>
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -179,8 +199,14 @@
 
                     <div class="pt-8 border-t border-slate-100 dark:border-slate-800 space-y-4">
                         <div class="flex items-center justify-between">
-                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">{{ __('PID') }}</span>
-                            <span class="text-xs font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">{{ $service->pid ?: '---' }}</span>
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">{{ $service->type === 'docker' ? __('Container ID') : __('PID') }}</span>
+                            <span class="text-xs font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                @if($service->type === 'docker')
+                                    {{ $service->pid ? substr($service->pid, 0, 8) : 'N/A' }}
+                                @else
+                                    {{ $service->pid ?: '---' }}
+                                @endif
+                            </span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">{{ __('Stability') }}</span>
