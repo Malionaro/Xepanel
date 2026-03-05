@@ -52,7 +52,7 @@ class SettingController extends Controller
     public function checkForUpdates()
     {
         $token = Setting::get('github_token');
-        $repo = Setting::get('github_repo', 'malo/panel'); // Fallback to a default if not set
+        $repo = Setting::get('github_repo', 'Malionaro/Xepanel'); // Corrected default repo
         
         $url = "https://api.github.com/repos/{$repo}/commits/main";
         

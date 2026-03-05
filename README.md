@@ -1,8 +1,8 @@
-# 🚀 FilePanel - High-End Service Orchestration
+# 🚀 Xepanel - High-End Service Orchestration
 
 A futuristically designed, high-performance service management panel. Control your infrastructure with a cinematic UI—optimized for Game Servers, Bots, and Web Apps.
 
-![FilePanel Preview](https://via.placeholder.com/1200x600?text=FilePanel+Cinematic+Management)
+![Xepanel Preview](https://via.placeholder.com/1200x600?text=Xepanel+Cinematic+Management)
 
 ## ✨ Premium Features
 
@@ -30,8 +30,8 @@ A futuristically designed, high-performance service management panel. Control yo
 ### Setup
 1. **Initialise Cluster**:
    ```bash
-   git clone https://github.com/malo/panel.git
-   cd panel
+   git clone https://github.com/Malionaro/Xepanel.git
+   cd Xepanel
    ```
 
 2. **Install Dependencies**:
@@ -58,7 +58,7 @@ A futuristically designed, high-performance service management panel. Control yo
 ## 🔄 Auto-Update Protocol
 To enable the integrated update engine:
 1. Navigate to **Administration > Panel Settings**.
-2. Configure your **GitHub Repository** (e.g. `malo/panel`).
+2. Configure your **GitHub Repository** (`Malionaro/Xepanel`).
 3. (Optional) Provide a **GitHub Access Token** for private repos or higher rate limits.
 4. Click **"Check for Updates"** to synchronise with the main branch.
 
