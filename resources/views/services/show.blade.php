@@ -4,91 +4,66 @@
 
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div class="space-y-8">
+<div class="space-y-10">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center p-1.5 glass dark:bg-white/5 border-slate-200 dark:border-white/10 rounded-2xl shadow-sm w-fit">
+        <a href="{{ route('services.index') }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
+            <i data-lucide="server" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">My Services</span>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
+        <div class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400">
+            <i data-lucide="terminal" class="w-4 h-4"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">{{ $service->name }}</span>
+        </div>
+    </div>
+
     <!-- Service Header -->
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div class="flex items-center space-x-4">
-            <div class="w-16 h-16 rounded-3xl bg-brand-500/10 flex items-center justify-center text-brand-500 shadow-inner">
-                <i data-lucide="terminal" class="w-8 h-8"></i>
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div class="flex items-center space-x-6">
+            <div class="w-20 h-20 rounded-[2rem] bg-brand-500/10 flex items-center justify-center text-brand-500 shadow-xl border border-brand-500/20">
+                <i data-lucide="terminal" class="w-10 h-10"></i>
             </div>
             <div>
-                <h2 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">{{ $service->name }}</h2>
-                <div class="flex flex-wrap items-center mt-1 gap-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest {{ $service->getStatus() == 'running' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 border border-green-100 dark:border-green-900/30' : 'bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-100 dark:border-red-900/30' }}">
-                        <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $service->getStatus() == 'running' ? 'bg-green-500 animate-pulse' : 'bg-red-500' }}"></span>
-                        {{ strtoupper($service->getStatus()) }}
+                <div class="flex items-center space-x-3 mb-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] {{ $service->getStatus() == 'running' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20' }}">
+                        <span class="w-1.5 h-1.5 rounded-full mr-2 {{ $service->getStatus() == 'running' ? 'bg-green-500 animate-pulse glow-green' : 'bg-red-500' }}"></span>
+                        {{ $service->getStatus() }}
                     </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-dark-hover text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-dark-border">
-                        <i data-lucide="{{ $service->type === 'docker' ? 'container' : 'cpu' }}" class="w-3 h-3 mr-1.5"></i>
-                        {{ $service->type === 'docker' ? 'DOCKER' : 'HOST PROCESS' }}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] bg-slate-500/10 text-slate-500 dark:text-slate-400 border border-slate-500/20">
+                        <i data-lucide="{{ $service->type === 'docker' ? 'container' : 'cpu' }}" class="w-3 h-3 mr-2"></i>
+                        {{ $service->type }}
                     </span>
-                    
-                    @php
-                        $displayIp = request()->getHost();
-                        $displayPort = '';
-                        if ($service->type === 'docker' && !empty($service->docker_ports)) {
-                            $displayPort = explode(':', $service->docker_ports[0])[0];
-                        }
-                        $fullAddress = $displayPort ? $displayIp . ':' . $displayPort : $displayIp;
-                    @endphp
-                    
-                    @if($service->type === 'docker' && $displayPort)
-                    <button onclick="navigator.clipboard.writeText('{{ $fullAddress }}'); const t = this.querySelector('span').innerText; this.querySelector('span').innerText = 'COPIED!'; setTimeout(() => this.querySelector('span').innerText = t, 2000);" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-widest bg-brand-50 text-brand-600 border border-brand-100 dark:bg-brand-900/20 dark:border-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors cursor-pointer group/copy" title="Click to copy IP">
-                        <i data-lucide="copy" class="w-3 h-3 mr-1.5 group-active/copy:scale-90 transition-transform"></i>
-                        <span>{{ $fullAddress }}</span>
-                    </button>
-                    @endif
                 </div>
+                <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white">{{ $service->name }}</h2>
             </div>
         </div>
         
         <!-- Quick Action Bar -->
-        <div class="flex flex-wrap items-center gap-2">
-            @if(Auth::user()->role === 'admin')
-            <a href="{{ route('services.permissions', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-500 hover:text-purple-500 transition-all duration-300 shadow-sm overflow-hidden max-w-[42px] hover:max-w-[200px]" title="Permissions">
-                <i data-lucide="users" class="w-5 h-5 shrink-0"></i>
-                <span class="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Permissions</span>
-            </a>
-            @endif
-            @if($service->type !== 'docker')
-            <a href="{{ route('services.systemd', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-500 hover:text-indigo-500 transition-all duration-300 shadow-sm overflow-hidden max-w-[42px] hover:max-w-[200px]" title="Auto-Start (Systemd)">
-                <i data-lucide="shield-check" class="w-5 h-5 shrink-0"></i>
-                <span class="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Systemd</span>
-            </a>
-            @endif
-            <a href="{{ route('services.crash_logs', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-500 hover:text-red-500 transition-all duration-300 shadow-sm overflow-hidden max-w-[42px] hover:max-w-[200px]" title="Crash Logs">
-                <i data-lucide="alert-circle" class="w-5 h-5 shrink-0"></i>
-                <span class="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Crash Logs</span>
-            </a>
-            <a href="{{ route('services.schedules', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-500 hover:text-yellow-500 transition-all duration-300 shadow-sm overflow-hidden max-w-[42px] hover:max-w-[200px]" title="Scheduled Tasks">
-                <i data-lucide="clock" class="w-5 h-5 shrink-0"></i>
-                <span class="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Schedules</span>
-            </a>
-            <a href="{{ route('services.export', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-500 hover:text-blue-500 transition-all duration-300 shadow-sm overflow-hidden max-w-[42px] hover:max-w-[200px]" title="Export JSON">
-                <i data-lucide="download" class="w-5 h-5 shrink-0"></i>
-                <span class="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Export</span>
-            </a>
-            <a href="{{ route('services.backups', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-500 hover:text-green-500 transition-all duration-300 shadow-sm overflow-hidden max-w-[42px] hover:max-w-[200px]" title="Backups">
-                <i data-lucide="archive" class="w-5 h-5 shrink-0"></i>
-                <span class="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Backups</span>
-            </a>
-            @if(!empty($service->installer_script) && $service->type !== 'docker')
-            <form action="{{ route('services.reinstall', $service->id) }}" method="POST" class="inline" onsubmit="return confirm('WARNING: This will rerun the installation script. Existing files might be overwritten or updated. Continue?')">
-                @csrf
-                <button type="submit" class="group flex items-center px-3 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-500 hover:text-brand-500 transition-all duration-300 shadow-sm overflow-hidden max-w-[42px] hover:max-w-[200px]" title="Reinstall / Rerun Script">
-                    <i data-lucide="refresh-ccw" class="w-5 h-5 shrink-0"></i>
-                    <span class="ml-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Reinstall</span>
-                </button>
-            </form>
-            @endif
-            
-            <div class="w-px h-8 bg-gray-200 dark:bg-dark-border mx-1"></div>
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center glass dark:bg-dark-card p-1.5 rounded-2xl border-slate-200 dark:border-dark-border shadow-sm">
+                @if(Auth::user()->role === 'admin')
+                <a href="{{ route('services.permissions', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl text-slate-500 hover:text-purple-500 hover:bg-purple-500/10 transition-all duration-500 overflow-hidden max-w-[46px] hover:max-w-[200px]" title="Permissions">
+                    <i data-lucide="users" class="w-5 h-5 shrink-0"></i>
+                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-500 font-black text-[10px] uppercase tracking-[0.2em]">Permissions</span>
+                </a>
+                @endif
+                <a href="{{ route('services.schedules', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl text-slate-500 hover:text-yellow-500 hover:bg-yellow-500/10 transition-all duration-500 overflow-hidden max-w-[46px] hover:max-w-[200px]" title="Schedules">
+                    <i data-lucide="clock" class="w-5 h-5 shrink-0"></i>
+                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-500 font-black text-[10px] uppercase tracking-[0.2em]">Schedules</span>
+                </a>
+                <a href="{{ route('services.backups', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl text-slate-500 hover:text-green-500 hover:bg-green-500/10 transition-all duration-500 overflow-hidden max-w-[46px] hover:max-w-[200px]" title="Backups">
+                    <i data-lucide="archive" class="w-5 h-5 shrink-0"></i>
+                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-500 font-black text-[10px] uppercase tracking-[0.2em]">Backups</span>
+                </a>
+                <div class="w-px h-5 bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                <a href="{{ route('services.edit', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl text-slate-500 hover:text-brand-500 hover:bg-brand-500/10 transition-all duration-500 overflow-hidden max-w-[46px] hover:max-w-[200px]" title="Edit Configuration">
+                    <i data-lucide="settings" class="w-5 h-5 shrink-0"></i>
+                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-500 font-black text-[10px] uppercase tracking-[0.2em]">Settings</span>
+                </a>
+            </div>
 
-            <a href="{{ route('services.edit', $service->id) }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-hover transition-all">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
-                <span>Edit</span>
-            </a>
-            <a href="{{ route('services.files', $service->id) }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/25 hover:bg-brand-600 transition-all">
+            <a href="{{ route('services.files', $service->id) }}" class="flex items-center space-x-3 px-8 py-3.5 rounded-2xl bg-brand-500 text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-500/25 hover:bg-brand-600 transition-all hover:-translate-y-1 active:scale-95">
                 <i data-lucide="folder-open" class="w-4 h-4"></i>
                 <span>File Manager</span>
             </a>
@@ -96,173 +71,169 @@
     </div>
 
     @if(session('status'))
-        <div class="bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 text-green-700 dark:text-green-400 p-4 rounded-2xl flex items-center space-x-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <span class="text-sm font-medium">{{ session('status') }}</span>
+        <div class="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-5 rounded-3xl flex items-center space-x-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <i data-lucide="check-circle" class="w-6 h-6"></i>
+            </div>
+            <span class="text-sm font-bold">{{ session('status') }}</span>
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-10">
         <!-- Sidebar Controls -->
-        <div class="lg:col-span-1 space-y-6">
+        <div class="lg:col-span-1 space-y-8">
             <!-- Controls Card -->
-            <div class="card bg-white dark:bg-dark-card p-6 rounded-[2rem] border border-gray-200 dark:border-dark-border shadow-sm">
-                <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center">
-                    <i data-lucide="zap" class="w-3 h-3 mr-2"></i>
-                    Execution Control
+            <div class="glass dark:bg-dark-card p-8 rounded-[2.5rem] border border-slate-200 dark:border-dark-border shadow-sm">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-8 flex items-center">
+                    <i data-lucide="zap" class="w-3.5 h-3.5 mr-2.5 text-brand-500"></i>
+                    {{ __('Execution Control') }}
                 </h3>
                 
-                <div class="space-y-3">
+                <div class="space-y-4">
                     @if($service->getStatus() == 'stopped')
                         <form action="{{ route('services.start', $service->id) }}" method="POST">
                             @csrf
-                            <button class="group w-full flex items-center justify-center space-x-3 bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-green-500/20 active:scale-95">
-                                <i data-lucide="play" class="w-5 h-5 fill-current"></i>
-                                <span>START SERVICE</span>
+                            <button class="w-full flex items-center justify-center space-x-3 bg-green-500 hover:bg-green-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-green-500/20 active:scale-95 group">
+                                <i data-lucide="play" class="w-6 h-6 fill-current group-hover:scale-110 transition-transform"></i>
+                                <span class="tracking-widest text-xs uppercase">{{ __('START SERVICE') }}</span>
                             </button>
                         </form>
                     @else
                         <form action="{{ route('services.stop', $service->id) }}" method="POST">
                             @csrf
-                            <button class="group w-full flex items-center justify-center space-x-3 bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-red-500/20 active:scale-95">
-                                <i data-lucide="square" class="w-5 h-5 fill-current"></i>
-                                <span>STOP SERVICE</span>
+                            <button class="w-full flex items-center justify-center space-x-3 bg-red-500 hover:bg-red-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-red-500/20 active:scale-95 group">
+                                <i data-lucide="square" class="w-6 h-6 fill-current group-hover:scale-110 transition-transform"></i>
+                                <span class="tracking-widest text-xs uppercase">{{ __('STOP SERVICE') }}</span>
                             </button>
                         </form>
                     @endif
                     
                     <form action="{{ route('services.stop', $service->id) }}" method="POST">
                         @csrf
-                        <button class="w-full flex items-center justify-center space-x-3 bg-gray-100 dark:bg-dark-hover text-gray-700 dark:text-gray-300 font-bold py-3 rounded-2xl transition-all hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95">
+                        <button class="w-full flex items-center justify-center space-x-3 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 font-black py-4 rounded-2xl transition-all hover:bg-slate-200 dark:hover:bg-slate-800 active:scale-95 border border-slate-200 dark:border-slate-700">
                             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                            <span>RESTART</span>
+                            <span class="tracking-widest text-[10px] uppercase">{{ __('RESTART') }}</span>
                         </button>
                     </form>
                 </div>
 
-                <div class="mt-6 pt-6 border-t border-gray-100 dark:border-dark-border">
-                    <a href="{{ route('services.envs', $service->id) }}" class="flex items-center justify-between text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-brand-500 transition-colors group">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="list" class="w-4 h-4 text-gray-400 group-hover:text-brand-500"></i>
-                            <span>Environment Variables</span>
+                <div class="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+                    <a href="{{ route('services.envs', $service->id) }}" class="flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-all">
+                                <i data-lucide="list" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-brand-500 transition-colors">{{ __('Environment') }}</span>
                         </div>
-                        <span class="bg-gray-100 dark:bg-dark-hover px-2 py-0.5 rounded text-[10px]">{{ count($service->env_vars ?? []) }}</span>
+                        <span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg text-[9px] font-black text-slate-500">{{ count($service->env_vars ?? []) }}</span>
                     </a>
                 </div>
             </div>
 
             <!-- Info Card -->
-            <div class="card bg-white dark:bg-dark-card p-6 rounded-[2rem] border border-gray-200 dark:border-dark-border shadow-sm">
-                <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center">
-                    <i data-lucide="info" class="w-3 h-3 mr-2"></i>
-                    System Info
+            <div class="glass dark:bg-dark-card p-8 rounded-[2.5rem] border border-slate-200 dark:border-dark-border shadow-sm">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-8 flex items-center">
+                    <i data-lucide="activity" class="w-3.5 h-3.5 mr-2.5 text-brand-500"></i>
+                    {{ __('Live Telemetry') }}
                 </h3>
                 
-                <div class="space-y-5">
-                    <div>
-                        <span class="text-[10px] font-black uppercase text-gray-400 block mb-1 tracking-widest">Working Directory</span>
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="folder" class="w-3 h-3 text-gray-400"></i>
-                            <code class="text-xs font-mono text-brand-600 dark:text-brand-400 truncate break-all">{{ $service->working_dir }}</code>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-black uppercase text-gray-400 block mb-1 tracking-widest">Start Command</span>
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="play-circle" class="w-3 h-3 text-gray-400"></i>
-                            <code class="text-xs font-mono text-gray-700 dark:text-gray-300">{{ $service->start_command }}</code>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 pt-2">
-                        <div>
-                            <span class="text-[10px] font-black uppercase text-gray-400 block mb-1 tracking-widest">Process PID</span>
-                            <span class="text-xs font-mono font-bold text-gray-900 dark:text-white">{{ $service->pid ?: 'NONE' }}</span>
-                        </div>
-                        <div>
-                            <span class="text-[10px] font-black uppercase text-gray-400 block mb-1 tracking-widest">Auto-Restart</span>
-                            <span class="text-xs font-bold {{ $service->auto_restart ? 'text-green-500' : 'text-gray-500' }}">{{ $service->auto_restart ? 'ENABLED' : 'DISABLED' }}</span>
-                        </div>
-                    </div>
-
+                <div class="space-y-8">
                     @if($service->getStatus() == 'running')
-                    <div class="pt-4 border-t border-gray-100 dark:border-dark-border space-y-6">
+                    <div class="space-y-6">
                         <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest">CPU Usage</span>
-                                <span id="detail-cpu" class="text-xs font-mono font-black text-brand-500">...%</span>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">{{ __('CPU Utilisation') }}</span>
+                                <span id="detail-cpu" class="text-xs font-black text-brand-500">...%</span>
                             </div>
-                            <div class="h-24 w-full">
+                            <div class="h-20 w-full">
                                 <canvas id="cpuChart"></canvas>
                             </div>
                         </div>
                         <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest">RAM Usage</span>
-                                <span id="detail-ram" class="text-xs font-mono font-black text-purple-500">...</span>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">{{ __('Memory footprint') }}</span>
+                                <span id="detail-ram" class="text-xs font-black text-purple-500">...</span>
                             </div>
-                            <div class="h-24 w-full">
+                            <div class="h-20 w-full">
                                 <canvas id="ramChart"></canvas>
                             </div>
                         </div>
 
-                        <!-- 24h Analytics Link -->
-                        <div class="pt-2">
-                            <button onclick="toggleAnalytics24h()" class="w-full flex items-center justify-center space-x-2 py-2 bg-gray-50 dark:bg-dark-hover rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-brand-500 transition-all border border-gray-100 dark:border-dark-border">
-                                <i data-lucide="bar-chart-3" class="w-3 h-3"></i>
-                                <span>24h Analytics</span>
-                            </button>
+                        <button onclick="toggleAnalytics24h()" class="w-full flex items-center justify-center space-x-3 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-brand-500 transition-all border border-slate-100 dark:border-slate-800">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i>
+                            <span>{{ __('Open Analytics') }}</span>
+                        </button>
+                    </div>
+                    @else
+                    <div class="py-10 text-center">
+                        <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                            <i data-lucide="activity" class="w-6 h-6"></i>
                         </div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ __('Awaiting Telemetry...') }}</p>
                     </div>
                     @endif
+
+                    <div class="pt-8 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">{{ __('PID') }}</span>
+                            <span class="text-xs font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">{{ $service->pid ?: '---' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">{{ __('Stability') }}</span>
+                            <span class="text-[9px] font-black {{ $service->auto_restart ? 'text-green-500' : 'text-slate-400' }}">{{ $service->auto_restart ? 'OPTIMIZED' : 'LEGACY' }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             @if(Auth::user()->role === 'admin')
-            <div class="px-6">
-                <form action="{{ route('services.destroy', $service->id) }}" method="POST" onsubmit="return confirm('CRITICAL: Are you sure you want to PERMANENTLY DELETE this service and all its configuration?')">
-                    @csrf
-                    @method('DELETE')
-                    <button class="w-full flex items-center justify-center space-x-2 text-red-500/50 hover:text-red-500 text-[10px] font-black uppercase tracking-widest transition-colors">
-                        <i data-lucide="trash-2" class="w-3 h-3"></i>
-                        <span>Destroy Service</span>
-                    </button>
-                </form>
-            </div>
+            <form action="{{ route('services.destroy', $service->id) }}" method="POST" onsubmit="return confirm('CRITICAL: Permanent deletion?')" class="px-8">
+                @csrf
+                @method('DELETE')
+                <button class="w-full flex items-center justify-center space-x-2 text-red-500/40 hover:text-red-500 text-[9px] font-black uppercase tracking-[0.2em] transition-all">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <span>{{ __('Terminate infrastructure') }}</span>
+                </button>
+            </form>
             @endif
         </div>
 
         <!-- Console / Terminal Area -->
         <div class="lg:col-span-3">
-            <div class="card bg-[#0d1117] rounded-[2rem] border border-gray-200 dark:border-dark-border shadow-2xl h-[700px] flex flex-col overflow-hidden transition-all duration-500 hover:border-brand-500/20">
-                <div class="bg-white dark:bg-dark-card px-6 py-4 border-b border-gray-200 dark:border-dark-border flex justify-between items-center relative z-10">
-                    <div class="flex items-center space-x-3">
-                        <div class="flex space-x-1.5">
-                            <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/40"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/40"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/40"></div>
+            <div class="glass dark:bg-dark-card rounded-[3rem] border border-slate-200 dark:border-dark-border shadow-2xl h-[780px] flex flex-col overflow-hidden group hover:border-brand-500/30 transition-all duration-500">
+                <div class="bg-white/80 dark:bg-dark-card px-10 py-6 border-b border-slate-200 dark:border-dark-border flex justify-between items-center relative z-10">
+                    <div class="flex items-center space-x-6">
+                        <div class="flex space-x-2">
+                            <div class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-sm shadow-red-500/20"></div>
+                            <div class="w-3.5 h-3.5 rounded-full bg-yellow-500 shadow-sm shadow-yellow-500/20"></div>
+                            <div class="w-3.5 h-3.5 rounded-full bg-green-500 shadow-sm shadow-green-500/20"></div>
                         </div>
-                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-4">Service Terminal</span>
+                        <div class="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center">
+                            <i data-lucide="terminal" class="w-3.5 h-3.5 mr-2.5"></i>
+                            {{ __('Infrastructure Stream') }}
+                        </span>
                     </div>
-                    <button onclick="clearConsole()" class="text-[10px] font-black text-gray-400 hover:text-brand-500 transition-colors uppercase tracking-widest flex items-center">
-                        <i data-lucide="trash-2" class="w-3 h-3 mr-1.5"></i>
-                        Clear
+                    <button onclick="clearConsole()" class="p-2.5 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-500/10 transition-all">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
                     </button>
                 </div>
                 
-                <div id="console-output" class="flex-1 bg-black p-8 font-mono text-[11px] leading-relaxed overflow-y-auto text-green-500/90 whitespace-pre-wrap selection:bg-brand-500 selection:text-white">
-                    <div class="animate-pulse flex space-x-2">
-                        <span class="text-brand-500 font-bold">system@filepanel:~$</span>
-                        <span class="text-white italic">Initialising secure stream...</span>
+                <div id="console-output" class="flex-1 bg-[#020617] p-10 font-mono text-xs leading-relaxed overflow-y-auto text-slate-300 whitespace-pre-wrap selection:bg-brand-500/30 custom-scrollbar">
+                    <div class="flex items-center space-x-3 text-brand-500/60 font-black italic mb-6">
+                        <span>system@filepanel:~$</span>
+                        <span class="animate-pulse">_</span>
                     </div>
+                    <div class="text-slate-500 italic opacity-50">{{ __('Synchronising with host node...') }}</div>
                 </div>
                 
                 <!-- Web Terminal Input -->
-                <div class="bg-white dark:bg-dark-card px-6 py-4 border-t border-gray-200 dark:border-dark-border">
-                    <form id="terminal-form" class="flex items-center bg-gray-50 dark:bg-black border border-gray-200 dark:border-dark-border rounded-xl px-4 py-2 focus-within:border-brand-500/50 transition-all" onsubmit="sendCommand(event)">
-                        <span class="text-brand-500 mr-3 font-mono text-sm font-black italic">λ</span>
-                        <input type="text" id="terminal-input" class="flex-1 bg-transparent text-gray-700 dark:text-gray-300 font-mono text-sm outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="Execute command in {{ $service->type === 'docker' ? ($service->docker_main_mount ?: '/app') : basename($service->working_dir) }}..." autocomplete="off">
-                        <div class="flex items-center space-x-2 ml-4 opacity-50">
-                            <span class="text-[9px] font-black text-gray-400 border border-gray-300 dark:border-dark-border px-1.5 py-0.5 rounded">ENTER</span>
+                <div class="px-8 py-8 border-t border-slate-200 dark:border-dark-border bg-white/50 dark:bg-dark-card/50">
+                    <form id="terminal-form" class="flex items-center bg-white dark:bg-slate-950 border border-slate-200 dark:border-dark-border rounded-2xl px-6 py-4 shadow-sm focus-within:shadow-xl focus-within:shadow-brand-500/10 focus-within:border-brand-500/50 transition-all" onsubmit="sendCommand(event)">
+                        <span class="text-brand-500 mr-4 font-mono text-lg font-black italic">λ</span>
+                        <input type="text" id="terminal-input" class="flex-1 bg-transparent text-slate-700 dark:text-slate-200 font-mono text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600" placeholder="Forward command to environment..." autocomplete="off">
+                        <div class="hidden md:flex items-center space-x-3 ml-6">
+                            <span class="text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">{{ __('Execute') }}</span>
                         </div>
                     </form>
                 </div>
@@ -272,39 +243,47 @@
 </div>
 
 <!-- 24h Analytics Modal -->
-<div id="analytics-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-300 opacity-0">
-    <div class="bg-white dark:bg-dark-card w-full max-w-5xl rounded-[2.5rem] border border-gray-200 dark:border-dark-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div class="px-8 py-6 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50 dark:bg-dark-hover">
-            <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500">
-                    <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+<div id="analytics-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-950/80 backdrop-blur-xl transition-all duration-500 opacity-0">
+    <div class="glass dark:bg-dark-card w-full max-w-6xl rounded-[4rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] scale-95 transition-transform duration-500" id="analytics-content">
+        <div class="px-12 py-10 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <div class="flex items-center space-x-6">
+                <div class="w-16 h-16 rounded-3xl bg-brand-500/20 flex items-center justify-center text-brand-500 shadow-xl border border-brand-500/20">
+                    <i data-lucide="bar-chart-3" class="w-8 h-8"></i>
                 </div>
                 <div>
-                    <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">24-Hour Resource Analytics</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Long-term performance tracking for {{ $service->name }}</p>
+                    <h3 class="text-2xl font-black text-white uppercase tracking-tight">{{ __('Telemetry Insight') }}</h3>
+                    <p class="text-sm text-slate-400 font-medium">{{ __('Performance history for :name', ['name' => $service->name]) }}</p>
                 </div>
             </div>
-            <button onclick="toggleAnalytics24h()" class="p-2 text-gray-400 hover:text-red-500 transition-colors bg-white dark:bg-dark-bg rounded-xl border border-gray-200 dark:border-dark-border">
+            <button onclick="toggleAnalytics24h()" class="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 rounded-2xl border border-white/10 transition-all hover:bg-white/10">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
         </div>
-        <div class="flex-1 overflow-y-auto p-8 space-y-12 custom-scrollbar">
-            <div>
-                <div class="flex items-center justify-between mb-6">
-                    <h4 class="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">CPU Load History (%)</h4>
-                    <div id="cpu-avg" class="text-xs font-mono font-bold text-brand-500 px-3 py-1 bg-brand-50 dark:bg-brand-900/20 rounded-lg">Avg: ...%</div>
+        <div class="flex-1 overflow-y-auto p-12 space-y-16 custom-scrollbar">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="glass p-10 rounded-[3rem] border-white/5 bg-white/5">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h4 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-1">{{ __('CPU Load Trend (%)') }}</h4>
+                            <p class="text-xs font-bold text-white/40">{{ __('Sampled every 5 minutes') }}</p>
+                        </div>
+                        <div id="cpu-avg" class="text-xs font-black text-brand-400 bg-brand-500/20 px-4 py-1.5 rounded-xl border border-brand-500/20 shadow-lg shadow-brand-500/10">Avg: ...%</div>
+                    </div>
+                    <div class="h-64 w-full">
+                        <canvas id="cpuChart24h"></canvas>
+                    </div>
                 </div>
-                <div class="h-64 w-full">
-                    <canvas id="cpuChart24h"></canvas>
-                </div>
-            </div>
-            <div>
-                <div class="flex items-center justify-between mb-6">
-                    <h4 class="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">Memory Usage History (MB)</h4>
-                    <div id="ram-avg" class="text-xs font-mono font-bold text-purple-500 px-3 py-1 bg-purple-50 dark:bg-purple-900/20 rounded-lg">Avg: ... MB</div>
-                </div>
-                <div class="h-64 w-full">
-                    <canvas id="ramChart24h"></canvas>
+                <div class="glass p-10 rounded-[3rem] border-white/5 bg-white/5">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h4 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-1">{{ __('Memory footprint (MB)') }}</h4>
+                            <p class="text-xs font-bold text-white/40">{{ __('Memory allocation over 24h') }}</p>
+                        </div>
+                        <div id="ram-avg" class="text-xs font-black text-purple-400 bg-purple-500/20 px-4 py-1.5 rounded-xl border border-purple-500/20 shadow-lg shadow-purple-500/10">Avg: ... MB</div>
+                    </div>
+                    <div class="h-64 w-full">
+                        <canvas id="ramChart24h"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -322,13 +301,22 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-            y: { beginAtZero: true, display: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-            x: { display: true, grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } }
+            y: { 
+                beginAtZero: true, 
+                display: true, 
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10, weight: 'bold' } }
+            },
+            x: { 
+                display: true, 
+                grid: { display: false }, 
+                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10, weight: 'bold' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } 
+            }
         },
         plugins: { legend: { display: false } },
         elements: {
-            point: { radius: 2, hoverRadius: 5 },
-            line: { tension: 0.3, borderWidth: 3 }
+            point: { radius: 0, hoverRadius: 6, backgroundColor: '#8b5cf6' },
+            line: { tension: 0.4, borderWidth: 3 }
         }
     };
 
@@ -342,7 +330,7 @@
         plugins: { legend: { display: false } },
         elements: {
             point: { radius: 0 },
-            line: { tension: 0.4, borderWidth: 2 }
+            line: { tension: 0.5, borderWidth: 3 }
         }
     };
 
@@ -354,17 +342,25 @@
         const ramCtx = document.getElementById('ramChart')?.getContext('2d');
 
         if (cpuCtx) {
+            const gradient = cpuCtx.createLinearGradient(0, 0, 0, 100);
+            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
+            gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+            
             cpuChart = new Chart(cpuCtx, {
                 type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderColor: '#0c91eb', backgroundColor: 'rgba(12, 145, 235, 0.1)', fill: true }] },
+                data: { labels: [], datasets: [{ data: [], borderColor: '#8b5cf6', backgroundColor: gradient, fill: true }] },
                 options: miniChartOptions
             });
         }
 
         if (ramCtx) {
+            const gradient = ramCtx.createLinearGradient(0, 0, 0, 100);
+            gradient.addColorStop(0, 'rgba(168, 85, 247, 0.3)');
+            gradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
+
             ramChart = new Chart(ramCtx, {
                 type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', fill: true }] },
+                data: { labels: [], datasets: [{ data: [], borderColor: '#a855f7', backgroundColor: gradient, fill: true }] },
                 options: miniChartOptions
             });
         }
@@ -375,7 +371,11 @@
             .then(res => res.json())
             .then(data => {
                 if (data.logs !== lastLogContent) {
-                    consoleOutput.textContent = data.logs || '--- System: Awaiting application output ---';
+                    if (!data.logs) {
+                        consoleOutput.innerHTML = '<div class="text-slate-500 italic opacity-50">{{ __('--- Awaiting application output ---') }}</div>';
+                    } else {
+                        consoleOutput.textContent = data.logs;
+                    }
                     consoleOutput.scrollTop = consoleOutput.scrollHeight;
                     lastLogContent = data.logs;
                 }
@@ -402,14 +402,22 @@
 
     function toggleAnalytics24h() {
         const modal = document.getElementById('analytics-modal');
+        const content = document.getElementById('analytics-content');
         if (modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.add('opacity-100'); modal.classList.remove('opacity-0'); }, 10);
+            setTimeout(() => { 
+                modal.classList.add('opacity-100'); 
+                modal.classList.remove('opacity-0');
+                content.classList.add('scale-100');
+                content.classList.remove('scale-95');
+            }, 10);
             loadAnalytics24h();
         } else {
             modal.classList.add('opacity-0');
             modal.classList.remove('opacity-100');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            content.classList.add('scale-95');
+            content.classList.remove('scale-100');
+            setTimeout(() => modal.classList.add('hidden'), 500);
         }
     }
 
@@ -417,7 +425,13 @@
         fetch('{{ route('metrics.history_24h', $service->id) }}')
             .then(res => res.json())
             .then(data => {
-                const labels = data.map(p => p.time.split(' ')[1]); // Only show Time H:i
+                if (!data || data.length === 0) {
+                    document.getElementById('cpu-avg').textContent = 'Gathering Data...';
+                    document.getElementById('ram-avg').textContent = 'Initialising...';
+                    return;
+                }
+
+                const labels = data.map(p => p.time.split(' ')[1]); 
                 const cpuData = data.map(p => p.cpu);
                 const ramData = data.map(p => p.ram);
 
@@ -429,9 +443,13 @@
 
                 if (!cpuChart24h) {
                     const ctx = document.getElementById('cpuChart24h').getContext('2d');
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.1)');
+                    gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                    
                     cpuChart24h = new Chart(ctx, {
                         type: 'line',
-                        data: { labels: labels, datasets: [{ data: cpuData, borderColor: '#0c91eb', backgroundColor: 'rgba(12, 145, 235, 0.05)', fill: true }] },
+                        data: { labels: labels, datasets: [{ data: cpuData, borderColor: '#8b5cf6', backgroundColor: gradient, fill: true }] },
                         options: chartOptions
                     });
                 } else {
@@ -442,9 +460,13 @@
 
                 if (!ramChart24h) {
                     const ctx = document.getElementById('ramChart24h').getContext('2d');
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(168, 85, 247, 0.1)');
+                    gradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
+
                     ramChart24h = new Chart(ctx, {
                         type: 'line',
-                        data: { labels: labels, datasets: [{ data: ramData, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', fill: true }] },
+                        data: { labels: labels, datasets: [{ data: ramData, borderColor: '#a855f7', backgroundColor: gradient, fill: true }] },
                         options: chartOptions
                     });
                 } else {
@@ -479,51 +501,8 @@
             });
     }
 
-    function initLogStream() {
-        if (logSource) logSource.close();
-        
-        logSource = new EventSource('{{ route('services.logs.stream', $service->id) }}');
-        
-        logSource.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            if (data.append) {
-                consoleOutput.textContent += data.logs;
-            } else {
-                consoleOutput.textContent = data.logs || '--- System: Awaiting application output stream ---';
-            }
-            consoleOutput.scrollTop = consoleOutput.scrollHeight;
-        };
-
-        logSource.onerror = function() {
-            console.warn('Log stream connection lost. Reconnecting...');
-        };
-    }
-
-    function initStatsStream() {
-        @if($service->getStatus() == 'running')
-        if (statsSource) statsSource.close();
-
-        statsSource = new EventSource('{{ route('metrics.stream', $service->id) }}');
-
-        statsSource.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            const cpuEl = document.getElementById('detail-cpu');
-            const ramEl = document.getElementById('detail-ram');
-            if (cpuEl && ramEl) {
-                cpuEl.textContent = data.cpu + '%';
-                ramEl.textContent = data.ram;
-            }
-            updateCharts();
-        };
-
-        statsSource.onerror = function() {
-            console.warn('Stats stream connection lost.');
-        };
-        @endif
-    }
-
     function clearConsole() {
-        consoleOutput.textContent = '';
+        consoleOutput.innerHTML = '<div class="text-slate-500 italic opacity-50">{{ __('--- Terminal cleared ---') }}</div>';
         lastLogContent = '';
     }
 
@@ -545,9 +524,8 @@
             body: JSON.stringify({ command: command })
         })
         .then(() => {
-            // Optimistic UI: Append command to console immediately
             const cmdLine = document.createElement('div');
-            cmdLine.className = 'text-brand-400 mt-2 font-bold';
+            cmdLine.className = 'text-brand-400 mt-4 font-bold';
             cmdLine.textContent = '> ' + command;
             consoleOutput.appendChild(cmdLine);
             consoleOutput.scrollTop = consoleOutput.scrollHeight;
@@ -557,15 +535,13 @@
     initCharts();
     fetchLogs();
     fetchStats();
-    updateCharts(); // Initial charts load
+    updateCharts();
     
-    // Start polling instead of streaming to prevent server blocking
     logInterval = setInterval(fetchLogs, 2000);
     statsInterval = setInterval(fetchStats, 5000);
     
     if(typeof lucide !== 'undefined') lucide.createIcons();
     
-    // Cleanup on page leave
     window.addEventListener('beforeunload', () => {
         if (logInterval) clearInterval(logInterval);
         if (statsInterval) clearInterval(statsInterval);

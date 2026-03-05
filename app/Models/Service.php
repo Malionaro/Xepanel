@@ -228,15 +228,25 @@ class Service
         $hostDataDir = $basePath . '/' . $this->id;
         $volumes = "-v " . escapeshellarg($hostDataDir . ":" . ($this->docker_main_mount ?: '/app')) . " ";
         foreach ($this->docker_volumes as $volume) { $volumes .= "-v " . escapeshellarg($volume) . " "; }
-        $envs = ""; foreach ($this->env_vars ?? [] as $key => $value) { $envs .= "-e " . escapeshellarg("{$key}={$value}") . " "; }
-        
-        // Build the full background script
-        $fullCmd = "docker rm -f {$containerName} > /dev/null 2>&1; ";
-        $fullCmd .= "docker pull {$image} >> " . escapeshellarg($logPath) . " 2>&1; ";
-        $fullCmd .= "docker run -d --name {$containerName} {$ports} {$volumes} {$envs} --network " . escapeshellarg($this->docker_network) . " {$image} {$this->start_command} >> " . escapeshellarg($logPath) . " 2>&1";
+        $envs = ""; 
+        $envVars = $this->env_vars ?? [];
 
-        file_put_contents($scriptPath, "#!/bin/bash\n" . $fullCmd);
-        chmod($scriptPath, 0755);
+        // Auto-accept EULA for Minecraft servers if image matches
+        if (str_contains(strtolower($this->docker_image), 'minecraft') && !isset($envVars['EULA'])) {
+            $envVars['EULA'] = 'TRUE';
+        }
+
+        foreach ($envVars as $key => $value) { 
+            $envs .= "-e " . escapeshellarg("{$key}={$value}") . " "; 
+        }
+
+        // Build the full background script
+        $fullCmd = "#!/bin/bash\n";
+        $fullCmd .= "docker rm -f {$containerName} > /dev/null 2>&1\n";
+        $fullCmd .= "docker pull {$image} >> " . escapeshellarg($logPath) . " 2>&1\n";
+        $fullCmd .= "docker run -d --name {$containerName} {$ports} {$volumes} {$envs} --network " . escapeshellarg($this->docker_network) . " {$image} {$this->start_command} >> " . escapeshellarg($logPath) . " 2>&1\n";
+
+        file_put_contents($scriptPath, $fullCmd);        chmod($scriptPath, 0755);
 
         // Execute and forget
         exec("nohup {$scriptPath} > /dev/null 2>&1 &");

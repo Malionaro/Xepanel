@@ -31,7 +31,7 @@ class AuthController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
             \App\Models\ActivityLog::log("User Logged In", "Method: Password");
-            return redirect()->intended('dashboard');
+            return redirect()->intended(route('services.index'));
         }
 
         \App\Models\ActivityLog::log("Failed Login Attempt", "Email: " . $credentials['email']);

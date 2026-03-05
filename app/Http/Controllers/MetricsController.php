@@ -135,10 +135,27 @@ class MetricsController extends Controller
 
     public function getServiceHistory24h($id)
     {
-        $path = "metrics_24h/{$id}.json";
-        if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
-            return response()->json([]);
+        $path24h = "metrics_24h/{$id}.json";
+        $pathShort = "metrics_history/{$id}.json";
+        
+        $history = [];
+        
+        if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path24h)) {
+            $history = json_decode(\Illuminate\Support\Facades\Storage::disk('local')->get($path24h), true) ?: [];
         }
-        return response()->json(json_decode(\Illuminate\Support\Facades\Storage::disk('local')->get($path), true));
+        
+        // Fallback: If 24h history is empty, use the short-term history to avoid 0% displays
+        if (empty($history) && \Illuminate\Support\Facades\Storage::disk('local')->exists($pathShort)) {
+            $shortHistory = json_decode(\Illuminate\Support\Facades\Storage::disk('local')->get($pathShort), true) ?: [];
+            foreach ($shortHistory as $entry) {
+                $history[] = [
+                    'time' => now()->subMinutes(30)->format('Y-m-d') . ' ' . $entry['time'],
+                    'cpu' => $entry['cpu'],
+                    'ram' => $entry['ram']
+                ];
+            }
+        }
+        
+        return response()->json($history);
     }
 }

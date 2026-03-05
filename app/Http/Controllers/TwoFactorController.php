@@ -109,7 +109,7 @@ class TwoFactorController extends Controller
             $request->session()->forget('2fa_user_id');
             Auth::login($user);
             $request->session()->regenerate();
-            return redirect()->intended('dashboard');
+            return redirect()->intended(route('services.index'));
         }
 
         return back()->withErrors(['code' => 'The provided two-factor authentication code was invalid.']);

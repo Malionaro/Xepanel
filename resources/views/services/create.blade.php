@@ -3,17 +3,24 @@
 @section('header_title', 'Create Service')
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-8">
-    <div class="flex items-center space-x-2 text-gray-500 dark:text-gray-400 mb-2">
-        <a href="{{ route('dashboard') }}" class="hover:text-brand-500 transition-colors">Dashboard</a>
-        <i data-lucide="chevron-right" class="w-3 h-3"></i>
-        <span class="text-gray-900 dark:text-white font-bold">New Service</span>
+<div class="max-w-4xl mx-auto space-y-10">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center p-1.5 glass dark:bg-white/5 border-slate-200 dark:border-white/10 rounded-2xl shadow-sm w-fit">
+        <a href="{{ route('services.index') }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
+            <i data-lucide="server" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">My Services</span>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
+        <div class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">New Service</span>
+        </div>
     </div>
 
     <div class="flex items-center justify-between">
-        <h2 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Deploy New Instance</h2>
-        <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all hover:shadow-md">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Deploy Instance</h2>
+        <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+            <i data-lucide="x" class="w-4 h-4"></i>
             <span>Cancel</span>
         </a>
     </div>
