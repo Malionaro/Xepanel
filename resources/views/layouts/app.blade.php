@@ -251,7 +251,17 @@
             }
 
             // Sidebar should be HIDDEN only on these specific service-centric pages
-            const hideSidebarOn = ['services.index', 'services.show', 'services.files', 'services.create', 'services.edit'];
+            const hideSidebarOn = [
+                'services.index', 
+                'services.show', 
+                'services.files', 
+                'services.create', 
+                'services.edit',
+                'services.backups',
+                'services.schedules',
+                'services.schedules.edit',
+                'services.permissions'
+            ];
             
             if (!hideSidebarOn.includes(currentRoute) || currentRoute === 'dashboard') {
                 sidebar.classList.remove('w-0', 'opacity-0', 'invisible');
