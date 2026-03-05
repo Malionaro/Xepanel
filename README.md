@@ -1,4 +1,4 @@
-# 🚀 Xepanel - High-End Service Orchestration
+# 🚀 Xepanel - Next-Gen Infrastructure Orchestration
 
 A futuristically designed, high-performance service management panel. Control your infrastructure with a cinematic UI—optimized for Game Servers, Bots, and Web Apps.
 
@@ -9,9 +9,10 @@ A futuristically designed, high-performance service management panel. Control yo
 - 🎨 **High-End UI/UX**: Cinematic dark-mode design with glassmorphism, glowing borders, and fluid spring-animations (4K Dribbble-inspired aesthetic).
 - 🌓 **White-Labeling**: Fully personalizable via UI. Change brand colors (Accent), Panel Names, and Icons with a single click.
 - 🐳 **Full Docker Orchestration**: Deploy containers with custom ports, volumes, and networks. Specialized for Minecraft, FiveM, and App Hosting.
-- 🗄️ **Integrated DB Management**: Automatic provisioning of MySQL/MariaDB databases and users for your services.
-- 📁 **Cloud-Scale File Manager**: Integrated high-performance editor (Ace), path protection, and secure infrastructure streams.
+- 🗄️ **Integrated DB Management**: Automatic provisioning of MySQL/MariaDB databases and users for your services directly from the panel.
+- 📁 **Cloud-Scale File Manager**: Integrated high-performance editor (Ace), mass operations (delete/archive), ZIP extraction, and secure infrastructure streams.
 - 📊 **Real-time Telemetry**: Live-updating resource gauges and 24h performance history graphs for CPU & RAM.
+- 🖥️ **Fullscreen Terminal**: Cinema-mode console for deep-dive log analysis and command execution.
 - 🔐 **Hardened Security**: 
     - Google 2FA (TOTP) hardware-grade protection.
     - Encrypted API tokens for CI/CD integration.

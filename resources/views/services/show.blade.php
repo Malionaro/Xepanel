@@ -244,12 +244,17 @@
                             {{ __('Infrastructure Stream') }}
                         </span>
                     </div>
-                    <button onclick="clearConsole()" class="p-2.5 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-500/10 transition-all">
-                        <i data-lucide="trash-2" class="w-5 h-5"></i>
-                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleFullscreen()" class="p-2.5 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-500/10 transition-all" title="Toggle Fullscreen">
+                            <i data-lucide="maximize" class="w-5 h-5" id="fullscreen-icon"></i>
+                        </button>
+                        <button onclick="clearConsole()" class="p-2.5 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-500/10 transition-all" title="Clear Terminal">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
                 </div>
                 
-                <div id="console-output" class="flex-1 bg-[#020617] p-10 font-mono text-xs leading-relaxed overflow-y-auto text-slate-300 whitespace-pre-wrap selection:bg-brand-500/30 custom-scrollbar">
+                <div id="console-output" class="flex-1 bg-[#020617] p-10 font-mono text-xs leading-relaxed overflow-y-auto text-slate-300 whitespace-pre-wrap selection:bg-brand-500/30 custom-scrollbar transition-all duration-500">
                     <div class="flex items-center space-x-3 text-brand-500/60 font-black italic mb-6">
                         <span>system@filepanel:~$</span>
                         <span class="animate-pulse">_</span>
@@ -530,6 +535,30 @@
                 }
             });
     }
+
+    function toggleFullscreen() {
+        const terminal = document.getElementById('console-output').parentElement;
+        const icon = document.getElementById('fullscreen-icon');
+        
+        if (!document.fullscreenElement) {
+            terminal.requestFullscreen().catch(err => {
+                // Fallback if browser blocks requestFullscreen
+                terminal.classList.toggle('terminal-fullscreen');
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        const icon = document.getElementById('fullscreen-icon');
+        if (document.fullscreenElement) {
+            icon.setAttribute('data-lucide', 'minimize');
+        } else {
+            icon.setAttribute('data-lucide', 'maximize');
+        }
+        if(typeof lucide !== 'undefined') lucide.createIcons();
+    });
 
     function clearConsole() {
         consoleOutput.innerHTML = '<div class="text-slate-500 italic opacity-50">{{ __('--- Terminal cleared ---') }}</div>';

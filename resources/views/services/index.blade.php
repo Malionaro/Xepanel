@@ -3,21 +3,17 @@
 @section('header_title', 'My Services')
 
 @section('content')
-<div class="space-y-10">
-    <!-- Breadcrumbs & Header -->
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div class="space-y-4">
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">Infrastructure</h2>
-        </div>
+<div class="space-y-20">
+    <!-- Header Section -->
+    <div class="flex flex-col items-center text-center space-y-8">
+        <h2 class="text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight italic uppercase tracking-[0.05em]">Infrastructure</h2>
         
-        <div class="flex items-center space-x-4">
-            @if(Auth::user()->role === 'admin')
-            <button onclick="navigateWithAnimation('{{ route('dashboard') }}')" class="flex items-center space-x-3 px-6 py-3.5 rounded-2xl bg-slate-900 dark:bg-brand-500 text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-500/25 hover:scale-105 active:scale-95 transition-all">
-                <i data-lucide="shield-check" class="w-4 h-4"></i>
-                <span>Admin Panel</span>
-            </button>
-            @endif
-        </div>
+        @if(Auth::user()->role === 'admin')
+        <button onclick="navigateWithAnimation('{{ route('dashboard') }}')" class="flex items-center space-x-3 px-10 py-4 rounded-[2rem] bg-slate-900 dark:bg-brand-500 text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-brand-500/40 hover:scale-105 active:scale-95 transition-all group">
+            <i data-lucide="shield-check" class="w-4 h-4 transition-transform group-hover:rotate-12"></i>
+            <span>Initialise Admin Panel</span>
+        </button>
+        @endif
     </div>
 
     <!-- Navigation Pill -->
@@ -42,7 +38,7 @@
         <div id="search-container" class="max-w-md w-full opacity-0 -translate-y-4 pointer-events-none transition-all duration-500 ease-out h-0 overflow-hidden">
             <div class="relative">
                 <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="service-search" onkeyup="filterServices()" placeholder="Search infrastructure by name..." class="w-full bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm glass">
+                <input type="text" id="service-search" onkeyup="filterServices()" placeholder="Search infrastructure by name..." class="w-full bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-14 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-white font-bold text-sm shadow-sm glass">
             </div>
         </div>
     </div>
@@ -89,10 +85,10 @@
                                     <i data-lucide="cpu" class="w-3 h-3 text-brand-500"></i>
                                     <span>Processor Load</span>
                                 </div>
-                                <span class="text-slate-600 dark:text-slate-300">65%</span>
+                                <span id="cpu-text-{{ $service->id }}" class="text-slate-600 dark:text-slate-300">...%</span>
                             </div>
                             <div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden p-[1px]">
-                                <div class="h-full bg-gradient-to-r from-brand-500 to-brand-400 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.3)] transition-all duration-1000" style="width: 65%"></div>
+                                <div id="cpu-bar-{{ $service->id }}" class="h-full bg-gradient-to-r from-brand-500 via-brand-400 to-brand-600 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.3)] transition-all duration-1000 liquid-bar" style="width: 0%"></div>
                             </div>
                         </div>
                         <!-- RAM -->
@@ -102,10 +98,10 @@
                                     <i data-lucide="database" class="w-3 h-3 text-purple-500"></i>
                                     <span>Memory Usage</span>
                                 </div>
-                                <span class="text-slate-600 dark:text-slate-300">40%</span>
+                                <span id="ram-text-{{ $service->id }}" class="text-slate-600 dark:text-slate-300">...</span>
                             </div>
                             <div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden p-[1px]">
-                                <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all duration-1000" style="width: 40%"></div>
+                                <div id="ram-bar-{{ $service->id }}" class="h-full bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-600 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all duration-1000 liquid-bar" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
@@ -135,6 +131,41 @@
 </div>
 
 <script>
+    function updateServiceMetrics() {
+        @foreach($services as $service)
+            @if($service->getStatus() == 'running')
+                fetch('{{ route('metrics.service', $service->id) }}')
+                    .then(res => res.json())
+                    .then(data => {
+                        const cpuText = document.getElementById('cpu-text-{{ $service->id }}');
+                        const cpuBar = document.getElementById('cpu-bar-{{ $service->id }}');
+                        const ramText = document.getElementById('ram-text-{{ $service->id }}');
+                        const ramBar = document.getElementById('ram-bar-{{ $service->id }}');
+                        
+                        if (cpuText && cpuBar) {
+                            cpuText.textContent = data.cpu + '%';
+                            cpuBar.style.width = Math.min(100, parseFloat(data.cpu) || 0) + '%';
+                        }
+                        if (ramText && ramBar) {
+                            ramText.textContent = data.ram;
+                            const ramVal = parseFloat(data.ram) || 0;
+                            const maxRam = 4096; 
+                            const ramPercent = Math.min(100, (ramVal / maxRam) * 100);
+                            ramBar.style.width = ramPercent + '%';
+                        }
+
+                        // Alarm State Trigger (> 90%)
+                        const card = cpuText.closest('.service-card-cust');
+                        if (parseFloat(data.cpu) > 90 || (parseFloat(data.ram) / 4096 * 100) > 90) {
+                            card.classList.add('alarm-state');
+                        } else {
+                            card.classList.remove('alarm-state');
+                        }
+                    });
+            @endif
+        @endforeach
+    }
+
     function moveIndicator(index) {
         const indicator = document.getElementById('customer-nav-indicator');
         const tabs = document.querySelectorAll('.nav-tab-cust');
@@ -174,12 +205,14 @@
             }
         });
 
-        // Toggle empty state if needed
         const emptyState = document.getElementById('no-services-placeholder');
         if (emptyState) {
             emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
         }
     }
+
+    setInterval(updateServiceMetrics, 5000);
+    updateServiceMetrics();
 
     if(typeof lucide !== 'undefined') lucide.createIcons();
 </script>

@@ -3,7 +3,7 @@
 @section('header_title', __('Dashboard Overview'))
 
 @section('content')
-<div class="space-y-12">
+<div class="space-y-20 pt-10">
     <!-- Breadcrumbs -->
     <div class="flex items-center p-1.5 glass dark:bg-white/5 border-slate-200 dark:border-white/10 rounded-2xl shadow-sm w-fit">
         <a href="{{ route('services.index') }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">

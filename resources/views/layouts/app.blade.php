@@ -11,11 +11,15 @@
         'services.schedules',
         'services.schedules.edit',
         'services.permissions'
-    ];    $showSidebar = !in_array($currentRoute, $hideSidebarOn) || $currentRoute === 'dashboard';
+    ];
+    $showSidebar = !in_array($currentRoute, $hideSidebarOn) || $currentRoute === 'dashboard';
     $brandColor = \App\Models\Setting::get('brand_primary_color', '#8b5cf6');
     $panelIcon = \App\Models\Setting::get('panel_icon', 'layers');
-@endphp
-<!DOCTYPE html>
+
+    // Get dynamic version from Git
+    $gitHash = @shell_exec('git rev-parse --short HEAD');
+    $appVersion = $gitHash ? 'BUILD-' . trim($gitHash) : '1.0.0-BETA1';
+    @endphp<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
@@ -85,6 +89,27 @@
         .animate-slide-out-left { animation: slide-out-left 0.4s ease-in forwards; }
         .animate-slide-in-left { animation: slide-in-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .animate-slide-out-right { animation: slide-out-right 0.4s ease-in forwards; }
+
+        @keyframes liquid-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes alarm-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 30px 5px rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.8); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.5); }
+        }
+
+        .liquid-bar {
+            background-size: 200% 200%;
+            animation: liquid-flow 3s linear infinite;
+        }
+
+        .alarm-state {
+            animation: alarm-pulse 1.5s infinite !important;
+        }
 
         .sidebar-item-active { 
             background: linear-gradient(135deg, {{ $brandColor }} 0%, {{ $brandColor }}dd 100%); 
@@ -208,6 +233,7 @@
                 </div>
             </nav>
 
+            @auth
             <div class="p-6 border-t border-slate-200 dark:border-dark-border glass dark:bg-transparent">
                 <div class="flex items-center space-x-4 p-3 rounded-2xl bg-white/50 dark:bg-slate-900/10 border border-white/20 dark:border-white/5 shadow-sm">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-[11px] font-black text-white shadow-lg uppercase relative">
@@ -228,7 +254,14 @@
                         </button>
                     </form>
                 </div>
+                
+                <!-- Versioning -->
+                <div class="mt-4 px-4 flex items-center justify-between opacity-30 group-hover:opacity-100 transition-opacity">
+                    <span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">System Kernel</span>
+                    <span class="text-[8px] font-mono font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">{{ $appVersion }}</span>
+                </div>
             </div>
+            @endauth
         </aside>
 
         <!-- Main Content -->
@@ -240,18 +273,20 @@
             @endif
             
             <header class="h-20 glass dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-10 shrink-0 z-10">
-                <h1 class="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">@yield('header_title', __('panel.overview'))</h1>
-                
-                <div class="flex items-center">
-                    <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border">
-                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-brand-400"></i>
-                        <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-600"></i>
-                    </button>
+                <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+                    <h1 class="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">@yield('header_title', __('panel.overview'))</h1>
+                    
+                    <div class="flex items-center">
+                        <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border">
+                            <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-brand-400"></i>
+                            <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-600"></i>
+                        </button>
+                    </div>
                 </div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-10 z-0">
-                <div class="max-w-7xl mx-auto">
+            <main class="flex-1 overflow-y-auto z-0 flex flex-col items-center">
+                <div class="w-full max-w-7xl p-10 pt-20 pb-32 space-y-16">
                     @yield('content')
                 </div>
             </main>

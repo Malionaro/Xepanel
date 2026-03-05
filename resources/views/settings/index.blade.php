@@ -28,7 +28,11 @@
                 </div>
                 <div>
                     <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">{{ __('System Core Update') }}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Version Control: <span id="current-version" class="text-blue-500 font-mono">...</span></p>
+                    <div class="flex items-center space-x-3 mt-1">
+                        <p class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Active Build: <span class="text-blue-500 font-mono">{{ trim(@shell_exec('git rev-parse --short HEAD')) ?: 'STABLE' }}</span></p>
+                        <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                        <p class="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Version: <span class="text-slate-900 dark:text-white">1.0.0-beta1</span></p>
+                    </div>
                 </div>
             </div>
             <div id="update-action-container">
