@@ -1,35 +1,36 @@
 @extends('layouts.app')
 
-@section('header_title', 'My Services')
+@section('header_title', __('panel.my_services'))
 
 @section('content')
 <div class="space-y-20">
     <!-- Header Section -->
-    <div class="flex flex-col items-center text-center space-y-8">
-        <h2 class="text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight italic uppercase tracking-[0.05em]">Infrastructure</h2>
+    <div class="flex items-center justify-between gap-4">
+        <h2 class="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight italic uppercase tracking-[0.05em] truncate">{{ __('panel.infrastructure') }}</h2>
         
         @if(Auth::user()->role === 'admin')
-        <button onclick="navigateWithAnimation('{{ route('dashboard') }}')" class="flex items-center space-x-3 px-10 py-4 rounded-[2rem] bg-slate-900 dark:bg-brand-500 text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-brand-500/40 hover:scale-105 active:scale-95 transition-all group">
-            <i data-lucide="shield-check" class="w-4 h-4 transition-transform group-hover:rotate-12"></i>
-            <span>Initialise Admin Panel</span>
+        <button onclick="navigateWithAnimation('{{ route('dashboard') }}')" class="flex items-center space-x-2 px-4 sm:px-10 py-2.5 sm:py-4 rounded-[2rem] bg-slate-900 dark:bg-brand-500 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] shadow-2xl shadow-brand-500/40 hover:scale-105 active:scale-95 transition-all group shrink-0">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 h-4 transition-transform group-hover:rotate-12"></i>
+            <span class="hidden xs:inline">{{ __('panel.initialise_admin') }}</span>
+            <span class="xs:hidden">{{ __('panel.administration') }}</span>
         </button>
         @endif
     </div>
 
     <!-- Navigation Pill -->
     <div class="flex flex-col items-center space-y-6">
-        <div class="relative flex items-center p-1.5 glass dark:bg-[#0f172a]/80 border-slate-200 dark:border-white/10 rounded-full shadow-2xl">
-            <div id="customer-nav-indicator" class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-brand-500 rounded-full shadow-lg shadow-brand-500/20 transition-transform duration-500 z-0"></div>
-            <button onclick="moveIndicator(0); hideSearch();" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors duration-300">
+        <div class="relative flex items-center p-1 glass dark:bg-[#0f172a]/80 border-slate-200 dark:border-white/10 rounded-full shadow-2xl w-full sm:w-auto">
+            <div id="customer-nav-indicator" class="absolute left-1 top-1 bottom-1 w-[calc(50%-2px)] bg-brand-500 rounded-full shadow-lg shadow-brand-500/20 transition-transform duration-500 z-0"></div>
+            <button onclick="moveIndicator(0); hideSearch();" class="nav-tab-cust relative z-10 flex-1 sm:w-44 py-2.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors duration-300">
                 <div class="flex items-center justify-center space-x-2">
-                    <i data-lucide="layers" class="w-4 h-4"></i>
-                    <span>All Servers</span>
+                    <i data-lucide="layers" class="w-3.5 h-3.5 sm:w-4 h-4"></i>
+                    <span>{{ __('panel.all_servers') }}</span>
                 </div>
             </button>
-            <button onclick="moveIndicator(1); showSearch();" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+            <button onclick="moveIndicator(1); showSearch();" class="nav-tab-cust relative z-10 flex-1 sm:w-44 py-2.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                 <div class="flex items-center justify-center space-x-2">
-                    <i data-lucide="search" class="w-4 h-4"></i>
-                    <span>Filter</span>
+                    <i data-lucide="search" class="w-3.5 h-3.5 sm:w-4 h-4"></i>
+                    <span>{{ __('panel.filter') }}</span>
                 </div>
             </button>
         </div>
@@ -38,26 +39,26 @@
         <div id="search-container" class="max-w-md w-full opacity-0 -translate-y-4 pointer-events-none transition-all duration-500 ease-out h-0 overflow-hidden">
             <div class="relative">
                 <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="service-search" onkeyup="filterServices()" placeholder="Search infrastructure by name..." class="w-full bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-14 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-white font-bold text-sm shadow-sm glass">
+                <input type="text" id="service-search" onkeyup="filterServices()" placeholder="{{ __('panel.search_placeholder') }}" class="w-full bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-14 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-white font-bold text-sm shadow-sm glass">
             </div>
         </div>
     </div>
 
     <!-- Customer Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10" id="customer-grid">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-10" id="customer-grid">
         @forelse($services as $service)
             @php $isRunning = $service->getStatus() == 'running'; @endphp
             <div class="group relative service-card-wrapper" data-name="{{ strtolower($service->name) }}">
                 <!-- Status Glow Effect -->
                 <div class="absolute -inset-0.5 bg-gradient-to-r {{ $isRunning ? 'from-green-500/50 to-emerald-600/50' : 'from-slate-400/20 to-slate-500/20' }} rounded-[3.2rem] opacity-0 group-hover:opacity-100 blur-xl transition duration-500"></div>
                 
-                <div class="service-card-cust relative glass dark:bg-[#0f172a]/95 rounded-[3rem] border {{ $isRunning ? 'border-green-500/30' : 'border-slate-200 dark:border-white/10' }} p-10 hover:shadow-2xl transition-all duration-500 flex flex-col h-full overflow-hidden">
+                <div class="service-card-cust relative glass dark:bg-[#0f172a]/95 rounded-[3rem] border {{ $isRunning ? 'border-green-500/30' : 'border-slate-200 dark:border-white/10' }} p-6 md:p-10 hover:shadow-2xl transition-all duration-500 flex flex-col h-full overflow-hidden">
                     
                     <!-- Status Decoration -->
                     <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full blur-[80px] {{ $isRunning ? 'bg-green-500/10' : 'bg-slate-500/5' }}"></div>
 
-                    <div class="flex items-start justify-between mb-10 relative z-10">
-                        <div class="space-y-3">
+                    <div class="flex items-start justify-between mb-8 md:mb-10 relative z-10">
+                        <div class="space-y-3 min-w-0 flex-1">
                             <div class="flex items-center space-x-3">
                                 <div class="relative flex h-2 w-2">
                                     @if($isRunning)
@@ -67,11 +68,11 @@
                                         <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
                                     @endif
                                 </div>
-                                <span class="text-[9px] font-black uppercase tracking-[0.3em] {{ $isRunning ? 'text-green-500' : 'text-slate-400' }}">{{ $service->getStatus() }}</span>
+                                <span class="text-[9px] font-black uppercase tracking-[0.3em] {{ $isRunning ? 'text-green-500' : 'text-slate-400' }}">{{ __($service->getStatus() == 'running' ? 'panel.online' : 'panel.offline') }}</span>
                             </div>
-                            <h3 class="font-black text-3xl text-slate-900 dark:text-white truncate tracking-tight group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors">{{ $service->name }}</h3>
+                            <h3 class="font-black text-2xl md:text-3xl text-slate-900 dark:text-white truncate tracking-tight group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors">{{ $service->name }}</h3>
                         </div>
-                        <div class="px-3 py-1.5 rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">
+                        <div class="px-3 py-1.5 rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] shrink-0 ml-4">
                             {{ $service->type }}
                         </div>
                     </div>
@@ -83,7 +84,7 @@
                             <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-400">
                                 <div class="flex items-center space-x-2">
                                     <i data-lucide="cpu" class="w-3 h-3 text-brand-500"></i>
-                                    <span>Processor Load</span>
+                                    <span>{{ __('panel.processor_load_short') }}</span>
                                 </div>
                                 <span id="cpu-text-{{ $service->id }}" class="text-slate-600 dark:text-slate-300">...%</span>
                             </div>
@@ -96,7 +97,7 @@
                             <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-400">
                                 <div class="flex items-center space-x-2">
                                     <i data-lucide="database" class="w-3 h-3 text-purple-500"></i>
-                                    <span>Memory Usage</span>
+                                    <span>{{ __('panel.memory_usage_short') }}</span>
                                 </div>
                                 <span id="ram-text-{{ $service->id }}" class="text-slate-600 dark:text-slate-300">...</span>
                             </div>
@@ -108,11 +109,11 @@
 
                     <div class="mt-auto pt-8 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-10">
                         <div class="flex flex-col">
-                            <span class="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1">Hardware ID</span>
+                            <span class="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1">{{ __('panel.hardware_id') }}</span>
                             <span class="text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400 tracking-tighter">{{ strtoupper(substr($service->id, 0, 8)) }}</span>
                         </div>
                         <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl bg-brand-500/10 dark:bg-brand-500/5 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-brand-500 hover:text-white hover:shadow-xl hover:shadow-brand-500/30 active:scale-95 group/btn">
-                            <span>Manage</span>
+                            <span>{{ __('panel.manage') }}</span>
                             <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover/btn:translate-x-1"></i>
                         </a>
                     </div>
@@ -123,8 +124,8 @@
                 <div class="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 dark:text-slate-700">
                     <i data-lucide="server-off" class="w-10 h-10"></i>
                 </div>
-                <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Infrastructure Offline</p>
-                <p class="text-slate-500 text-sm mt-2">No active instances found in your cluster.</p>
+                <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">{{ __('panel.infrastructure_offline') }}</p>
+                <p class="text-slate-500 text-sm mt-2">{{ __('panel.no_active_instances') }}</p>
             </div>
         @endforelse
     </div>
@@ -171,7 +172,7 @@
         const tabs = document.querySelectorAll('.nav-tab-cust');
         indicator.style.transform = `translateX(${index * 100}%)`;
         tabs.forEach((tab, i) => {
-            tab.className = `nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${i === index ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`;
+            tab.className = `nav-tab-cust relative z-10 flex-1 md:w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${i === index ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`;
         });
     }
 

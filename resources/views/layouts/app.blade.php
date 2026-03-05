@@ -162,9 +162,12 @@
     </div>
 
     <div class="flex h-screen overflow-hidden relative z-10">
+        <!-- Sidebar Overlay (Mobile only) -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-20 hidden lg:hidden"></div>
+
         <!-- Sidebar -->
         <aside id="main-sidebar" 
-               class="{{ $showSidebar ? 'w-72 opacity-100 visible' : 'w-0 opacity-0 invisible' }} glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transition-all duration-500 z-20 overflow-hidden">
+               class="-translate-x-full w-0 {{ $showSidebar ? 'lg:translate-x-0 lg:w-72 lg:static' : 'lg:hidden' }} fixed inset-y-0 left-0 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transition-all duration-500 z-30 overflow-hidden">
             <div class="p-8 flex justify-between items-center min-w-[18rem]">
                 <a href="{{ route('services.index') }}" class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
@@ -172,7 +175,12 @@
                     </div>
                     <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">{{ \App\Models\Setting::get('panel_name', 'FilePanel') }}</span>
                 </a>
+                <!-- Close button mobile -->
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-500">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
+            <!-- ... (rest of sidebar content remains the same until header) ... -->
 
             <nav class="flex-1 overflow-y-auto px-4 py-2 space-y-8">
                 <!-- Main Nav -->
@@ -272,9 +280,15 @@
                 </div>
             @endif
             
-            <header class="h-20 glass dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-10 shrink-0 z-10">
+            <header class="h-20 glass dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 md:px-10 shrink-0 z-10">
                 <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
-                    <h1 class="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">@yield('header_title', __('panel.overview'))</h1>
+                    <div class="flex items-center space-x-4">
+                        <!-- Hamburger Button Mobile -->
+                        <button onclick="toggleSidebar()" class="lg:hidden p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
+                        </button>
+                        <h1 class="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">@yield('header_title', __('panel.overview'))</h1>
+                    </div>
                     
                     <div class="flex items-center">
                         <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border">
@@ -286,13 +300,29 @@
             </header>
 
             <main class="flex-1 overflow-y-auto z-0 flex flex-col items-center">
-                <div class="w-full max-w-7xl p-10 pt-20 pb-32 space-y-16">
+                <div class="w-full max-w-7xl p-4 md:p-10 pt-12 md:pt-20 pb-32 space-y-10 md:space-y-16">
                     @yield('content')
                 </div>
             </main>
         </div>
     </div>
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('main-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0', 'w-72');
+                sidebar.classList.add('w-0');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full', 'w-0');
+                sidebar.classList.add('translate-x-0', 'w-72');
+                overlay.classList.remove('hidden');
+            }
+        }
         function navigateWithAnimation(url, direction = 'left') {
             const mainContent = document.querySelector('main > div');
             const sidebar = document.getElementById('main-sidebar');
