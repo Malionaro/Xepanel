@@ -23,8 +23,8 @@
     <!-- Navigation Pill -->
     <div class="flex justify-center">
         <div class="relative flex items-center p-1.5 glass dark:bg-[#0f172a]/80 border-slate-200 dark:border-white/10 rounded-full shadow-2xl">
-            <div id="customer-nav-indicator" class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-brand-500/20 border border-brand-500/50 rounded-full shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-transform duration-500 z-0"></div>
-            <button onclick="moveIndicator(0)" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-brand-600 dark:text-white transition-colors duration-300">
+            <div id="customer-nav-indicator" class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-brand-500 rounded-full shadow-lg shadow-brand-500/20 transition-transform duration-500 z-0"></div>
+            <button onclick="moveIndicator(0)" class="nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors duration-300">
                 <div class="flex items-center justify-center space-x-2">
                     <i data-lucide="layers" class="w-4 h-4"></i>
                     <span>All Servers</span>
@@ -132,7 +132,7 @@
         const tabs = document.querySelectorAll('.nav-tab-cust');
         indicator.style.transform = `translateX(${index * 100}%)`;
         tabs.forEach((tab, i) => {
-            tab.className = `nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${i === index ? 'text-brand-600 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`;
+            tab.className = `nav-tab-cust relative z-10 w-44 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${i === index ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`;
         });
     }
 

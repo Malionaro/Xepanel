@@ -25,11 +25,54 @@
     <form action="{{ route('settings.update') }}" method="POST" class="space-y-8">
         @csrf
 
+        <!-- Branding & UI Customization -->
+        <div class="glass dark:bg-dark-card border border-slate-200 dark:border-white/5 p-10 rounded-[3rem] shadow-2xl space-y-10 relative overflow-hidden group">
+            <div class="absolute -right-24 -top-24 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl group-hover:bg-brand-500/10 transition-colors duration-700"></div>
+            
+            <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 flex items-center relative z-10">
+                <i data-lucide="palette" class="w-4 h-4 mr-3 text-brand-500"></i>
+                {{ __('Visual Identity & Branding') }}
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
+                <div class="space-y-4">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{{ __('Primary Brand Color') }}</label>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative group/color">
+                            <input type="color" name="brand_primary_color" value="{{ $settings['brand_primary_color'] ?? '#8b5cf6' }}" class="w-16 h-16 rounded-2xl cursor-pointer bg-transparent border-none outline-none overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-2xl shadow-lg shadow-brand-500/20">
+                            <div class="absolute inset-0 rounded-2xl border-2 border-white/20 pointer-events-none group-hover/color:border-white/40 transition-colors"></div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-slate-900 dark:text-white">{{ __('Panel Accent') }}</p>
+                            <p class="text-[10px] text-slate-500 font-medium leading-relaxed">{{ __('This color will be used for buttons, active states, and glow effects.') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{{ __('Panel Logo (Lucide Icon)') }}</label>
+                    <div class="relative">
+                        <i data-lucide="box" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                        <input type="text" name="panel_icon" value="{{ $settings['panel_icon'] ?? 'layers' }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" placeholder="e.g. layers, box, server, zap">
+                    </div>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest ml-1">Powered by <a href="https://lucide.dev/icons" target="_blank" class="text-brand-500 hover:underline">Lucide Icons</a></p>
+                </div>
+            </div>
+
+            <div class="space-y-4 relative z-10 pt-6 border-t border-slate-100 dark:border-white/5">
+                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{{ __('External Branding URL') }}</label>
+                <div class="relative">
+                    <i data-lucide="link" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <input type="text" name="branding_logo_url" value="{{ $settings['branding_logo_url'] ?? '' }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium text-sm shadow-sm" placeholder="https://cdn.yourhost.com/logo.png">
+                </div>
+            </div>
+        </div>
+
         <!-- General Settings -->
-        <div class="card bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-8 rounded-[2rem] shadow-sm space-y-6">
-            <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400 flex items-center">
-                <i data-lucide="settings" class="w-3 h-3 mr-2 text-brand-500"></i>
-                {{ __('General Configuration') }}
+        <div class="glass dark:bg-dark-card border border-slate-200 dark:border-white/5 p-10 rounded-[3rem] shadow-xl space-y-10 relative overflow-hidden">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 flex items-center">
+                <i data-lucide="settings" class="w-4 h-4 mr-3 text-indigo-500"></i>
+                {{ __('Global Infrastructure Control') }}
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

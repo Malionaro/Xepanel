@@ -25,34 +25,34 @@
         
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
             <div class="max-w-xl">
-                <span class="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-brand-200">{{ __('System Overview') }}</span>
-                <h1 class="text-5xl font-extrabold tracking-tight mb-4 leading-[1.1]">{{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}</h1>
-                <p class="text-brand-100 text-lg font-medium opacity-80 leading-relaxed">{{ __('Your infrastructure is performing optimally. All systems are currently operational and monitored in real-time.') }}</p>
+                <span class="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-white">{{ __('System Overview') }}</span>
+                <h1 class="text-5xl font-extrabold tracking-tight mb-4 leading-[1.1] text-white">{{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}</h1>
+                <p class="text-white/80 text-lg font-medium leading-relaxed">{{ __('Your infrastructure is performing optimally. All systems are currently operational and monitored in real-time.') }}</p>
                 
                 <div class="mt-10 flex items-center space-x-6">
                     <a href="{{ route('services.create') }}" class="bg-white text-brand-700 px-8 py-4 rounded-2xl font-bold text-sm hover:shadow-xl hover:-translate-y-1 transition-all active:scale-95 shadow-lg flex items-center space-x-2">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>{{ __('DEPLOY INSTANCE') }}</span>
                     </a>
-                    <div class="flex items-center space-x-3 bg-brand-500/30 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-white/5">
+                    <div class="flex items-center space-x-3 bg-white/10 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-white/10">
                         <div class="relative flex h-3 w-3">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                         </div>
-                        <span class="text-xs font-bold uppercase tracking-widest text-white/90">{{ count($services) }} {{ __('Active Services') }}</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-white">{{ count($services) }} {{ __('Active Services') }}</span>
                     </div>
                 </div>
             </div>
             
             <!-- Quick Stats -->
             <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
-                <div class="glass p-6 rounded-[2rem] border-white/5 bg-white/5">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-brand-200 mb-2">{{ __('Uptime') }}</p>
-                    <p class="text-2xl font-black">99.9%</p>
+                <div class="glass p-6 rounded-[2rem] border-white/10 bg-white/5">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-white/60 mb-2">{{ __('Uptime') }}</p>
+                    <p class="text-2xl font-black text-white">99.9%</p>
                 </div>
-                <div class="glass p-6 rounded-[2rem] border-white/5 bg-white/5">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-brand-200 mb-2">{{ __('Region') }}</p>
-                    <p class="text-2xl font-black">EU-1</p>
+                <div class="glass p-6 rounded-[2rem] border-white/10 bg-white/5">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-white/60 mb-2">{{ __('Region') }}</p>
+                    <p class="text-2xl font-black text-white">EU-1</p>
                 </div>
             </div>
         </div>

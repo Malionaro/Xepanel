@@ -68,49 +68,106 @@ class Egg
                 'name' => 'Minecraft Server',
                 'description' => 'A high-performance Minecraft server (Paper/Spigot).',
                 'type' => 'docker',
+                'icon' => 'gamepad-2',
                 'docker_image' => 'itzg/minecraft-server:latest',
                 'docker_main_mount' => '/data',
                 'docker_ports' => '25565:25565',
                 'docker_network' => 'bridge',
                 'env_vars' => ['EULA' => 'TRUE'],
+                'default_ram_mb' => 2048,
                 'variables' => [
                     ['key' => 'MEMORY', 'name' => 'Memory (RAM)', 'description' => 'Amount of RAM for the server (e.g. 2G, 4G)', 'default' => '2G'],
                     ['key' => 'TYPE', 'name' => 'Server Type', 'description' => 'PAPER, SPIGOT, FABRIC, VANILLA', 'default' => 'PAPER'],
                     ['key' => 'VERSION', 'name' => 'Minecraft Version', 'description' => 'LATEST or a specific version like 1.20.1', 'default' => 'LATEST']
                 ],
-                'start_command' => '',
                 'tags' => 'Minecraft, Gaming'
             ],
             [
-                'name' => 'Python Script',
-                'description' => 'Runs a Python script and installs requirements.txt.',
+                'name' => 'Discord Bot (Node.js)',
+                'description' => 'Node.js environment for Discord bots with auto-npm install.',
                 'type' => 'docker',
+                'icon' => 'message-square',
+                'docker_image' => 'node:20-slim',
+                'docker_main_mount' => '/app',
+                'docker_network' => 'bridge',
+                'default_ram_mb' => 512,
+                'variables' => [
+                    ['key' => 'BOT_JS', 'name' => 'Main JS File', 'description' => 'The file to run (e.g. index.js, bot.js)', 'default' => 'index.js'],
+                    ['key' => 'AUTO_INSTALL', 'name' => 'Auto NPM Install', 'description' => 'TRUE to run npm install on start', 'default' => 'TRUE']
+                ],
+                'start_command' => 'sh -c "if [ \"${AUTO_INSTALL}\" = \"TRUE\" ] && [ -f package.json ]; then npm install; fi && node ${BOT_JS}"',
+                'tags' => 'NodeJS, Discord, Bot'
+            ],
+            [
+                'name' => 'FiveM Server (Linux)',
+                'description' => 'CitizenFX server for GTA V Roleplay.',
+                'type' => 'docker',
+                'icon' => 'car',
+                'docker_image' => 'spritsail/fivem',
+                'docker_main_mount' => '/config',
+                'docker_ports' => '30120:30120',
+                'docker_network' => 'bridge',
+                'default_ram_mb' => 4096,
+                'variables' => [
+                    ['key' => 'LICENSE_KEY', 'name' => 'FiveM License Key', 'description' => 'Get one at keymaster.fivem.net', 'default' => ''],
+                    ['key' => 'SV_HOSTNAME', 'name' => 'Server Name', 'description' => 'Hostname displayed in the browser', 'default' => 'New Roleplay Server']
+                ],
+                'tags' => 'FiveM, GTA, Roleplay'
+            ],
+            [
+                'name' => 'BungeeCord Proxy',
+                'description' => 'Lightweight Minecraft proxy to link multiple servers.',
+                'type' => 'docker',
+                'icon' => 'network',
+                'docker_image' => 'itzg/bungeecord',
+                'docker_main_mount' => '/server',
+                'docker_ports' => '25577:25577',
+                'docker_network' => 'bridge',
+                'default_ram_mb' => 1024,
+                'variables' => [
+                    ['key' => 'BUNGEE_VERSION', 'name' => 'Bungee Version', 'description' => 'LATEST or specific version', 'default' => 'LATEST']
+                ],
+                'tags' => 'Minecraft, Proxy'
+            ],
+            [
+                'name' => 'Webserver (Nginx)',
+                'description' => 'Highly efficient Nginx server for static HTML/JS websites.',
+                'type' => 'docker',
+                'icon' => 'globe',
+                'docker_image' => 'nginx:alpine',
+                'docker_main_mount' => '/usr/share/nginx/html',
+                'docker_ports' => '80:80',
+                'docker_network' => 'bridge',
+                'default_ram_mb' => 256,
+                'tags' => 'Web, Nginx, HTML'
+            ],
+            [
+                'name' => 'PHP Web Application',
+                'description' => 'Apache with PHP 8.2 for dynamic web applications.',
+                'type' => 'docker',
+                'icon' => 'code-2',
+                'docker_image' => 'php:8.2-apache',
+                'docker_main_mount' => '/var/www/html',
+                'docker_ports' => '80:80',
+                'docker_network' => 'bridge',
+                'default_ram_mb' => 1024,
+                'tags' => 'PHP, Apache, Web'
+            ],
+            [
+                'name' => 'Python Application',
+                'description' => 'Generic Python environment with auto-pip support.',
+                'type' => 'docker',
+                'icon' => 'terminal',
                 'docker_image' => 'python:3.11-slim',
                 'docker_main_mount' => '/app',
                 'docker_network' => 'bridge',
+                'default_ram_mb' => 1024,
                 'variables' => [
-                    ['key' => 'PYTHON_VERSION', 'name' => 'Python Version', 'description' => 'e.g. 3.12-slim, 3.11-slim, 3.10-slim', 'default' => '3.11-slim'],
                     ['key' => 'SCRIPT_FILE', 'name' => 'Main Script', 'description' => 'The file to run', 'default' => 'main.py'],
                     ['key' => 'AUTO_PIP', 'name' => 'Auto Pip Install', 'description' => 'TRUE to install requirements.txt automatically', 'default' => 'TRUE']
                 ],
                 'start_command' => 'sh -c "if [ \"${AUTO_PIP}\" = \"TRUE\" ] && [ -f requirements.txt ]; then pip install -r requirements.txt; fi && python ${SCRIPT_FILE}"',
                 'tags' => 'Python, App'
-            ],
-            [
-                'name' => 'Discord Bot (Python)',
-                'description' => 'Discord bot with auto-pip support and pre-installed libraries.',
-                'type' => 'docker',
-                'docker_image' => 'python:3.11-slim',
-                'docker_main_mount' => '/app',
-                'docker_network' => 'bridge',
-                'variables' => [
-                    ['key' => 'PYTHON_VERSION', 'name' => 'Python Version', 'description' => 'e.g. 3.12-slim, 3.11-slim', 'default' => '3.11-slim'],
-                    ['key' => 'DISCORD_TOKEN', 'name' => 'Bot Token', 'description' => 'Your Discord Bot Token', 'default' => ''],
-                    ['key' => 'BOT_FILE', 'name' => 'Bot File', 'description' => 'The file to run', 'default' => 'bot.py'],
-                    ['key' => 'ADDITIONAL_PACKAGES', 'name' => 'Extra Packages', 'description' => 'Space separated list of pip packages', 'default' => 'discord.py requests']
-                ],
-                'start_command' => 'sh -c "pip install ${ADDITIONAL_PACKAGES} && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi && python ${BOT_FILE}"',
-                'tags' => 'Discord, Bot'
             ]
         ];
 

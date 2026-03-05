@@ -1,3 +1,20 @@
+@php
+    $currentRoute = request()->route() ? request()->route()->getName() : '';
+    $hideSidebarOn = [
+        'services.index', 
+        'services.show', 
+        'services.files', 
+        'services.create', 
+        'services.edit',
+        'services.backups',
+        'services.schedules',
+        'services.schedules.edit',
+        'services.permissions'
+    ];
+    $showSidebar = !in_array($currentRoute, $hideSidebarOn) || $currentRoute === 'dashboard';
+    $brandColor = \App\Models\Setting::get('brand_primary_color', '#8b5cf6');
+    $panelIcon = \App\Models\Setting::get('panel_icon', 'layers');
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -13,8 +30,9 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd', 400: '#a78bfa',
-                            500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6', 900: '#4c1d95',
+                            50: '{{ $brandColor }}10', 100: '{{ $brandColor }}20', 200: '{{ $brandColor }}30', 
+                            300: '{{ $brandColor }}40', 400: '{{ $brandColor }}60', 500: '{{ $brandColor }}', 
+                            600: '{{ $brandColor }}ee', 700: '{{ $brandColor }}cc', 800: '{{ $brandColor }}aa', 900: '{{ $brandColor }}88',
                         },
                         slate: {
                             800: '#1e293b',
@@ -44,22 +62,34 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         @keyframes slide-in-right {
-            from { transform: translateX(100px); opacity: 0; filter: blur(10px); }
-            to { transform: translateX(0); opacity: 1; filter: blur(0); }
+            0% { transform: translateX(100px); opacity: 0; filter: blur(10px); }
+            100% { transform: translateX(0); opacity: 1; filter: blur(0); }
         }
         
         @keyframes slide-out-left {
-            from { transform: translateX(0); opacity: 1; filter: blur(0); }
-            to { transform: translateX(-100px); opacity: 0; filter: blur(10px); }
+            0% { transform: translateX(0); opacity: 1; filter: blur(0); }
+            100% { transform: translateX(-100px); opacity: 0; filter: blur(10px); }
         }
 
-        .animate-slide-in { animation: slide-in-right 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .animate-slide-out { animation: slide-out-left 0.5s ease-in forwards; }
+        @keyframes slide-in-left {
+            0% { transform: translateX(-100px); opacity: 0; filter: blur(10px); }
+            100% { transform: translateX(0); opacity: 1; filter: blur(0); }
+        }
+
+        @keyframes slide-out-right {
+            0% { transform: translateX(0); opacity: 1; filter: blur(0); }
+            100% { transform: translateX(100px); opacity: 0; filter: blur(10px); }
+        }
+
+        .animate-slide-in-right { animation: slide-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .animate-slide-out-left { animation: slide-out-left 0.4s ease-in forwards; }
+        .animate-slide-in-left { animation: slide-in-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .animate-slide-out-right { animation: slide-out-right 0.4s ease-in forwards; }
 
         .sidebar-item-active { 
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); 
+            background: linear-gradient(135deg, {{ $brandColor }} 0%, {{ $brandColor }}dd 100%); 
             color: white !important;
-            box-shadow: 0 10px 15px -3px rgba(109, 40, 217, 0.3);
+            box-shadow: 0 10px 20px -5px {{ $brandColor }}66;
         }
         .glass {
             background: rgba(255, 255, 255, 0.7);
@@ -79,10 +109,10 @@
             background: rgba(30, 41, 59, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
-        .glow-purple { box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.05); }
-        .dark .glow-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); }
-        .glow-green { box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.05); }
-        .dark .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
+        .glow-purple { box-shadow: 0 10px 15px -3px {{ $brandColor }}22; }
+        .dark .glow-purple { box-shadow: 0 0 20px {{ $brandColor }}33; }
+        .glow-green { box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.1); }
+        .dark .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
         .hover-lift { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .hover-lift:hover { transform: translateY(-4px); }
         
@@ -108,11 +138,12 @@
 
     <div class="flex h-screen overflow-hidden relative z-10">
         <!-- Sidebar -->
-        <aside id="main-sidebar" class="w-0 opacity-0 invisible glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transition-all duration-500 z-20 overflow-hidden">
+        <aside id="main-sidebar" 
+               class="{{ $showSidebar ? 'w-72 opacity-100 visible' : 'w-0 opacity-0 invisible' }} glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transition-all duration-500 z-20 overflow-hidden">
             <div class="p-8 flex justify-between items-center min-w-[18rem]">
                 <a href="{{ route('services.index') }}" class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
-                        <i data-lucide="layers" class="w-6 h-6"></i>
+                        <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
                     </div>
                     <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">{{ \App\Models\Setting::get('panel_name', 'FilePanel') }}</span>
                 </a>
@@ -123,10 +154,10 @@
                 <div>
                     <span class="px-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{{ __('panel.main_menu') }}</span>
                     <div class="mt-4 space-y-1">
-                        <a href="{{ route('services.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('services.index') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
+                        <button onclick="navigateWithAnimation('{{ route('services.index') }}', 'right')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('services.index') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
                             <i data-lucide="server" class="w-5 h-5"></i>
                             <span class="font-semibold text-sm">{{ __('panel.my_services') }}</span>
-                        </a>
+                        </button>
                         <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('dashboard') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
                             <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                             <span class="font-semibold text-sm">{{ __('panel.dashboard') }}</span>
@@ -227,12 +258,21 @@
         </div>
     </div>
     <script>
-        function navigateWithAnimation(url) {
-            const main = document.querySelector('main > div');
-            main.classList.add('animate-slide-out');
+        function navigateWithAnimation(url, direction = 'left') {
+            const mainContent = document.querySelector('main > div');
+            const sidebar = document.getElementById('main-sidebar');
+            
+            if (direction === 'right') {
+                mainContent.classList.add('animate-slide-out-right');
+                sidebar.classList.add('opacity-0', 'invisible');
+                sidebar.style.width = '0';
+            } else {
+                mainContent.classList.add('animate-slide-out-left');
+            }
+
             setTimeout(() => {
                 window.location.href = url;
-            }, 450);
+            }, 400);
         }
 
         function toggleTheme() {
@@ -242,30 +282,13 @@
         
         // Default sidebar visibility logic
         document.addEventListener('DOMContentLoaded', () => {
-            const sidebar = document.getElementById('main-sidebar');
             const mainContent = document.querySelector('main > div');
             const currentRoute = '{{ request()->route() ? request()->route()->getName() : '' }}';
             
             if (currentRoute === 'dashboard') {
-                mainContent.classList.add('animate-slide-in');
-            }
-
-            // Sidebar should be HIDDEN only on these specific service-centric pages
-            const hideSidebarOn = [
-                'services.index', 
-                'services.show', 
-                'services.files', 
-                'services.create', 
-                'services.edit',
-                'services.backups',
-                'services.schedules',
-                'services.schedules.edit',
-                'services.permissions'
-            ];
-            
-            if (!hideSidebarOn.includes(currentRoute) || currentRoute === 'dashboard') {
-                sidebar.classList.remove('w-0', 'opacity-0', 'invisible');
-                sidebar.classList.add('w-72', 'opacity-100', 'visible');
+                mainContent.classList.add('animate-slide-in-right');
+            } else {
+                mainContent.classList.add('animate-slide-in-left');
             }
         });
 
