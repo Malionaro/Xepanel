@@ -26,50 +26,91 @@ class SettingController extends Controller
             abort(403);
         }
 
-        // Validate basic fields
-        $request->validate([
-            'panel_name' => 'required|string|max:255',
-            'docker_base_path' => 'required|string',
-            'global_webhook_url' => 'nullable|url',
-        ]);
+        // Save everything provided in the request
+        $settings = $request->except(['_token']);
+        
+        // Handle checkboxes (booleans)
+        $settings['enable_public_api'] = $request->has('enable_public_api');
+        $settings['maintenance_mode'] = $request->has('maintenance_mode');
+        $settings['allow_registration'] = $request->has('allow_registration');
 
-        // Explicitly collect data to ensure booleans are correct
-        $data = [
-            'panel_name' => $request->input('panel_name'),
-            'max_backup_size_mb' => (int) $request->input('max_backup_size_mb', 500),
-            'log_tail_lines' => (int) $request->input('log_tail_lines', 100),
-            'max_log_size_mb' => (int) $request->input('max_log_size_mb', 10),
-            'enable_public_api' => $request->has('enable_public_api'),
-            'maintenance_mode' => $request->has('maintenance_mode'),
-            'docker_base_path' => $request->input('docker_base_path'),
-            'default_timezone' => $request->input('default_timezone', 'UTC'),
-            'docker_default_network' => $request->input('docker_default_network', 'bridge'),
-            'ui_theme' => $request->input('ui_theme', 'system'),
-            'panel_language' => $request->input('panel_language', 'en'),
-            'global_webhook_url' => $request->input('global_webhook_url'),
-            'discord_bot_token' => $request->input('discord_bot_token'),
-            'discord_public_key' => $request->input('discord_public_key'),
-            'discord_client_id' => $request->input('discord_client_id'),
-            'default_user_ram_mb' => (int) $request->input('default_user_ram_mb', 4096),
-            'default_user_cpu_percent' => (int) $request->input('default_user_cpu_percent', 200),
-            'default_user_disk_mb' => (int) $request->input('default_user_disk_mb', 10240),
-            'default_user_services' => (int) $request->input('default_user_services', 5),
-            'session_lifetime' => (int) $request->input('session_lifetime', 120),
-            'allow_registration' => $request->has('allow_registration'),
-            'branding_logo_url' => $request->input('branding_logo_url'),
-        ];
+        Setting::setMany($settings);
 
-        // Save everything at once
-        Setting::setMany($data);
-
-        // Immediately update session locale for instant feedback
-        if (isset($data['panel_language'])) {
-            session(['locale' => $data['panel_language']]);
-            \App::setLocale($data['panel_language']);
+        if (isset($settings['panel_language'])) {
+            session(['locale' => $settings['panel_language']]);
+            \App::setLocale($settings['panel_language']);
         }
 
-        ActivityLog::log("Updated Global Settings", "User: " . Auth::user()->name . " (Maintenance: " . ($data['maintenance_mode'] ? 'ON' : 'OFF') . ")");
+        ActivityLog::log("Updated Global Settings", "User: " . Auth::user()->name);
 
         return redirect()->route('settings.index')->with('status', 'Settings updated successfully!');
+    }
+
+    /**
+     * Check for new commits on GitHub.
+     */
+    public function checkForUpdates()
+    {
+        $token = Setting::get('github_token');
+        $repo = Setting::get('github_repo', 'malo/panel'); // Fallback to a default if not set
+        
+        $url = "https://api.github.com/repos/{$repo}/commits/main";
+        
+        $opts = [
+            'http' => [
+                'method' => 'GET',
+                'header' => [
+                    'User-Agent: PHP',
+                    $token ? "Authorization: token {$token}" : ""
+                ]
+            ]
+        ];
+        
+        try {
+            $context = stream_context_create($opts);
+            $response = file_get_contents($url, false, $context);
+            $commit = json_decode($response, true);
+            
+            $latestSha = $commit['sha'] ?? null;
+            $currentSha = trim(shell_exec('git rev-parse HEAD'));
+            
+            return response()->json([
+                'current' => substr($currentSha, 0, 7),
+                'latest' => substr($latestSha, 0, 7),
+                'has_update' => $latestSha !== $currentSha,
+                'message' => $commit['commit']['message'] ?? 'No message'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Could not connect to GitHub'], 500);
+        }
+    }
+
+    /**
+     * Perform the update.
+     */
+    public function runUpdate()
+    {
+        if (Auth::user()->role !== 'admin') abort(403);
+
+        $logPath = storage_path('logs/update.log');
+        
+        // Background script to run the update
+        $script = "#!/bin/bash\n";
+        $script .= "cd " . base_path() . "\n";
+        $script .= "git pull origin main >> {$logPath} 2>&1\n";
+        $script .= "composer install --no-interaction --no-dev >> {$logPath} 2>&1\n";
+        $script .= "php artisan migrate --force >> {$logPath} 2>&1\n";
+        $script .= "php artisan config:clear >> {$logPath} 2>&1\n";
+        $script .= "php artisan view:clear >> {$logPath} 2>&1\n";
+        
+        $scriptPath = storage_path('app/run_update.sh');
+        file_put_contents($scriptPath, $script);
+        chmod($scriptPath, 0755);
+        
+        exec("nohup {$scriptPath} > /dev/null 2>&1 &");
+        
+        ActivityLog::log("System Update Started", "The update process was initiated from the web interface.");
+        
+        return response()->json(['status' => 'Update started in background. Check update.log for details.']);
     }
 }

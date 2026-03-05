@@ -56,6 +56,10 @@
                     <i data-lucide="archive" class="w-5 h-5 shrink-0"></i>
                     <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-500 font-black text-[10px] uppercase tracking-[0.2em]">Backups</span>
                 </a>
+                <a href="{{ route('services.databases', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl text-slate-500 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all duration-500 overflow-hidden max-w-[46px] hover:max-w-[200px]" title="Databases">
+                    <i data-lucide="database" class="w-5 h-5 shrink-0"></i>
+                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-500 font-black text-[10px] uppercase tracking-[0.2em]">Databases</span>
+                </a>
                 <div class="w-px h-5 bg-slate-200 dark:bg-slate-800 mx-1"></div>
                 <a href="{{ route('services.edit', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl text-slate-500 hover:text-brand-500 hover:bg-brand-500/10 transition-all duration-500 overflow-hidden max-w-[46px] hover:max-w-[200px]" title="Edit Configuration">
                     <i data-lucide="settings" class="w-5 h-5 shrink-0"></i>

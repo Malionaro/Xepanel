@@ -1,74 +1,76 @@
-# 🚀 Xepanel
+# 🚀 FilePanel - High-End Service Orchestration
 
-A lightweight, high-performance, and **file-based** service management panel. Control your Docker containers and host processes with ease—no SQL database required.
+A futuristically designed, high-performance service management panel. Control your infrastructure with a cinematic UI—optimized for Game Servers, Bots, and Web Apps.
 
-![Xepanel Preview](https://via.placeholder.com/1200x600?text=Xepanel+Modern+Service+Management)
+![FilePanel Preview](https://via.placeholder.com/1200x600?text=FilePanel+Cinematic+Management)
 
-## ✨ Features
+## ✨ Premium Features
 
-- 🐳 **Full Docker Support**: Deploy, monitor, and manage containers with custom ports, volumes, and networks.
-- ⚙️ **Host Process Support**: Run Node.js, Python, or Java scripts directly on your host using systemd-like management.
-- 📁 **No Database Needed**: All data (Users, Services, Settings) is stored in optimized JSON files. Portable and fast.
-- 📊 **Real-time Analytics**: Beautiful, live-updating charts for CPU and RAM usage powered by Chart.js.
-- 🔐 **Enhanced Security**: 
-    - Google 2FA (TOTP) support for every account.
-    - Fine-grained API Keys for automation.
-    - Resource Quotas (Limit RAM, CPU, and Instance count per user).
-- 🥚 **Smart Templates (Eggs)**:
-    - Pre-configured templates for Minecraft (Paper/Spigot), Python Bots, MariaDB, Redis, and more.
-    - Automatic dependency installation (pip, npm, composer).
-- 📂 **Rich File Manager**: Integrated web-based editor with upload, zip/unzip, and secure path protection.
-- 📋 **Activity Logs**: Full audit trail of every action performed on the panel.
-- 🌑 **Modern UI**: Clean, dark-mode first design with responsive mobile support.
+- 🎨 **High-End UI/UX**: Cinematic dark-mode design with glassmorphism, glowing borders, and fluid spring-animations (4K Dribbble-inspired aesthetic).
+- 🌓 **White-Labeling**: Fully personalizable via UI. Change brand colors (Accent), Panel Names, and Icons with a single click.
+- 🐳 **Full Docker Orchestration**: Deploy containers with custom ports, volumes, and networks. Specialized for Minecraft, FiveM, and App Hosting.
+- 🗄️ **Integrated DB Management**: Automatic provisioning of MySQL/MariaDB databases and users for your services.
+- 📁 **Cloud-Scale File Manager**: Integrated high-performance editor (Ace), path protection, and secure infrastructure streams.
+- 📊 **Real-time Telemetry**: Live-updating resource gauges and 24h performance history graphs for CPU & RAM.
+- 🔐 **Hardened Security**: 
+    - Google 2FA (TOTP) hardware-grade protection.
+    - Encrypted API tokens for CI/CD integration.
+    - Intelligent resource quotas and isolation.
+- 🔄 **Auto-Update Engine**: Integrated GitHub sync. Check for updates and apply core patches directly from the web interface.
+- 📁 **JSON-Driven Core**: Lightning-fast, file-based data storage. No SQL database required for the panel itself.
 
-## 🛠️ Installation
+## 🛠️ Rapid Deployment
 
 ### Prerequisites
-- PHP 8.2 or higher
+- PHP 8.2 or 8.3
 - Composer
-- Docker (optional, for container support)
+- Docker (for containerized instances)
+- Git (for the Auto-Update engine)
 
 ### Setup
-1. Clone the repository:
+1. **Initialise Cluster**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Xepanel.git
-   cd Xepanel
+   git clone https://github.com/malo/panel.git
+   cd panel
    ```
 
-2. Install dependencies:
+2. **Install Dependencies**:
    ```bash
-   composer install
-   npm install && npm run build
+   composer install --no-dev --optimize-autoloader
    ```
 
-3. Configure environment:
+3. **Configure Environment**:
    ```bash
    cp .env.example .env
    php artisan key:generate
    ```
 
-4. Set permissions:
+4. **Authorise Permissions**:
    ```bash
    chmod -R 775 storage bootstrap/cache
    ```
 
-5. Start the panel:
+5. **Launch Protocol**:
    ```bash
    php artisan serve
    ```
 
-Default admin login: Access the panel and create your first user via the registration/setup flow.
+## 🔄 Auto-Update Protocol
+To enable the integrated update engine:
+1. Navigate to **Administration > Panel Settings**.
+2. Configure your **GitHub Repository** (e.g. `malo/panel`).
+3. (Optional) Provide a **GitHub Access Token** for private repos or higher rate limits.
+4. Click **"Check for Updates"** to synchronise with the main branch.
 
-## 🥚 Included Eggs (Templates)
-Xepanel comes with "Batteries Included":
-- **Minecraft Server**: Automatic EULA acceptance and version management.
-- **Python Script**: Auto-installs `requirements.txt` via pip.
-- **Discord Bot**: Specialized for discord.py/nextcord.
-- **MariaDB/Redis**: One-click database deployment.
-- **Node.js**: Auto-installs `package.json` dependencies.
+## 🥚 Evolution (Templates)
+Standard protocols included:
+- **Minecraft Ecosystem**: Paper, Spigot, Fabric, BungeeCord.
+- **GTA V Roleplay**: FiveM (Linux optimized).
+- **Web Infrastructure**: Nginx (Alpine), PHP 8.2 (Apache).
+- **Bot Environments**: Node.js 20, Python 3.11 (Auto-pip/npm support).
 
-## 📄 License
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+## 📄 Registry
+This project is licensed under the **MIT License**.
 
 ---
-Built with ❤️ for developers who love simplicity.
+*Elevating Infrastructure Management to an Art Form.*

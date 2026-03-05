@@ -99,6 +99,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{id}/backups', [BackupController::class, 'store'])->name('services.backups.store');
     Route::get('/services/{id}/backups/{filename}/download', [BackupController::class, 'download'])->name('services.backups.download');
     Route::delete('/services/{id}/backups/{filename}', [BackupController::class, 'destroy'])->name('services.backups.destroy');
+
+    // Service Databases
+    Route::get('/services/{id}/databases', [\App\Http\Controllers\DatabaseController::class, 'index'])->name('services.databases');
+    Route::post('/services/{id}/databases', [\App\Http\Controllers\DatabaseController::class, 'store'])->name('services.databases.store');
+    Route::delete('/services/{id}/databases/{dbId}', [\App\Http\Controllers\DatabaseController::class, 'destroy'])->name('services.databases.destroy');
+    Route::delete('/services/{id}/backups/{filename}', [BackupController::class, 'destroy'])->name('services.backups.destroy');
     
     // Scheduled Tasks
     Route::get('/services/{id}/schedules', [ScheduleController::class, 'index'])->name('services.schedules');
@@ -134,9 +140,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/services/{id}/files/mass', [FileManagerController::class, 'massDestroy'])->name('services.files.mass_destroy');
     Route::delete('/services/{id}/files', [FileManagerController::class, 'destroy'])->name('services.files.destroy');
     
-    // Global Settings
+    // Panel Settings
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings/check-update', [SettingController::class, 'checkForUpdates'])->name('settings.check_update');
+    Route::post('/settings/run-update', [SettingController::class, 'runUpdate'])->name('settings.run_update');
 
     // Egg Management
     Route::get('/eggs', [EggController::class, 'index'])->name('eggs.index');

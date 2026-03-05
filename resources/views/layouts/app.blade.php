@@ -7,11 +7,11 @@
         'services.create', 
         'services.edit',
         'services.backups',
+        'services.databases',
         'services.schedules',
         'services.schedules.edit',
         'services.permissions'
-    ];
-    $showSidebar = !in_array($currentRoute, $hideSidebarOn) || $currentRoute === 'dashboard';
+    ];    $showSidebar = !in_array($currentRoute, $hideSidebarOn) || $currentRoute === 'dashboard';
     $brandColor = \App\Models\Setting::get('brand_primary_color', '#8b5cf6');
     $panelIcon = \App\Models\Setting::get('panel_icon', 'layers');
 @endphp
@@ -279,16 +279,35 @@
             if (document.documentElement.classList.contains('dark')) { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
             else { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
         }
-        
         // Default sidebar visibility logic
         document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('main-sidebar');
             const mainContent = document.querySelector('main > div');
             const currentRoute = '{{ request()->route() ? request()->route()->getName() : '' }}';
-            
+
             if (currentRoute === 'dashboard') {
                 mainContent.classList.add('animate-slide-in-right');
             } else {
                 mainContent.classList.add('animate-slide-in-left');
+            }
+
+            // Sidebar should be HIDDEN only on these specific service-centric pages
+            const hideSidebarOn = [
+                'services.index', 
+                'services.show', 
+                'services.files', 
+                'services.create', 
+                'services.edit',
+                'services.backups',
+                'services.databases',
+                'services.schedules',
+                'services.schedules.edit',
+                'services.permissions'
+            ];
+
+            if (!hideSidebarOn.includes(currentRoute) || currentRoute === 'dashboard') {
+                sidebar.classList.remove('w-0', 'opacity-0', 'invisible');
+                sidebar.classList.add('w-72', 'opacity-100', 'visible');
             }
         });
 
