@@ -3,83 +3,82 @@
 @section('header_title', 'Create Account')
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-8">
-    <div class="flex items-center space-x-2 text-gray-500 dark:text-gray-400 mb-2">
-        <a href="{{ route('dashboard') }}" class="hover:text-brand-500 transition-colors">Dashboard</a>
-        <i data-lucide="chevron-right" class="w-3 h-3"></i>
-        <a href="{{ route('users.index') }}" class="hover:text-brand-500 transition-colors">User Management</a>
-        <i data-lucide="chevron-right" class="w-3 h-3"></i>
-        <span class="text-gray-900 dark:text-white font-bold">Add User</span>
-    </div>
-
-    <div class="flex items-center justify-between">
-        <h2 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Provision Account</h2>
-        <a href="{{ route('users.index') }}" class="flex items-center space-x-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all hover:shadow-md">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+<div class="max-w-4xl mx-auto space-y-10">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Provision Identity</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Initialize a new system account with specific privilege levels.</p>
+        </div>
+        <a href="{{ route('users.index') }}" class="flex items-center space-x-3 glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1 shrink-0 shadow-sm">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
             <span>Cancel</span>
         </a>
     </div>
 
-    <form action="{{ route('users.store') }}" method="POST" class="card bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-10 rounded-[2.5rem] shadow-xl space-y-8 transition-all duration-300">
+    <form action="{{ route('users.store') }}" method="POST" class="glass dark:bg-dark-card border border-slate-200 dark:border-white/5 p-10 md:p-12 rounded-[3.5rem] shadow-2xl space-y-10 relative overflow-hidden group">
+        <div class="absolute -right-24 -top-24 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl group-hover:bg-brand-500/10 transition-colors duration-700"></div>
+        
         @csrf
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Full Name</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
+            <div class="space-y-3">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Full Name</label>
                 <div class="relative">
-                    <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input type="text" name="name" value="{{ old('name') }}" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" required placeholder="John Doe">
+                    <i data-lucide="user" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <input type="text" name="name" value="{{ old('name') }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" required placeholder="John Doe">
                 </div>
             </div>
-            <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email Address</label>
+            <div class="space-y-3">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Email Address</label>
                 <div class="relative">
-                    <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input type="email" name="email" value="{{ old('email') }}" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" required placeholder="john@example.com">
+                    <i data-lucide="mail" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <input type="email" name="email" value="{{ old('email') }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" required placeholder="john@example.com">
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Secure Password</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
+            <div class="space-y-3">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Secure Password</label>
                 <div class="relative">
-                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input type="password" name="password" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" required minlength="6" placeholder="••••••••">
+                    <i data-lucide="lock" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <input type="password" name="password" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" required minlength="6" placeholder="••••••••">
                 </div>
             </div>
-            <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">System Role</label>
+            <div class="space-y-3">
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Access Tier</label>
                 <div class="relative">
-                    <i data-lucide="shield" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <select name="role" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium appearance-none">
+                    <i data-lucide="shield" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <select name="role" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm appearance-none cursor-pointer">
                         <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>Regular User</option>
                         <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrator</option>
                     </select>
-                    <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                    <i data-lucide="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"></i>
                 </div>
             </div>
         </div>
 
         @if($errors->any())
-            <div class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 p-4 rounded-2xl flex items-center space-x-3">
-                <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+            <div class="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-6 rounded-3xl flex items-center space-x-4 animate-in shake-in duration-500 relative z-10">
+                <i data-lucide="alert-octagon" class="w-6 h-6"></i>
                 <span class="text-sm font-bold">{{ $errors->first() }}</span>
             </div>
         @endif
 
-        <div class="pt-6">
-            <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-brand-500/25 active:scale-95 flex items-center justify-center space-x-2">
-                <i data-lucide="user-plus" class="w-5 h-5"></i>
-                <span>CREATE SYSTEM ACCOUNT</span>
+        <div class="pt-6 relative z-10">
+            <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-5 rounded-[2rem] transition-all shadow-2xl shadow-brand-500/25 active:scale-95 flex items-center justify-center space-x-3 group/submit">
+                <i data-lucide="zap" class="w-6 h-6 transition-transform group-hover/submit:scale-125"></i>
+                <span class="text-xs uppercase tracking-[0.3em]">INITIALIZE ACCOUNT</span>
             </button>
         </div>
     </form>
 
-    <div class="p-6 bg-brand-50 dark:bg-brand-900/10 border border-brand-100 dark:border-brand-900/20 rounded-[2rem] flex items-start space-x-4">
-        <i data-lucide="info" class="w-6 h-6 text-brand-600 shrink-0 mt-1"></i>
-        <p class="text-sm text-brand-800 dark:text-brand-400 font-medium leading-relaxed">
-            New users will be able to log in immediately. By default, regular users cannot see any services until you grant them specific permissions on the service detail page.
+    <div class="p-8 bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/20 rounded-[2.5rem] flex items-start space-x-5 shadow-sm">
+        <div class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 shrink-0">
+            <i data-lucide="info" class="w-6 h-6"></i>
+        </div>
+        <p class="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+            New system identities are registered immediately. Automated infrastructure isolation is enforced by default; you must manually assign service permissions to grant access to existing nodes.
         </p>
     </div>
 </div>

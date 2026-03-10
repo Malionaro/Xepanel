@@ -3,76 +3,85 @@
 @section('header_title', 'Activity Logs')
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-10">
     <div>
-        <h2 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Audit Trail</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Detailed history of all actions performed within the panel.</p>
+        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Audit Trail</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Immutable history of all operations and system modifications performed within the control panel.</p>
     </div>
 
-    <div class="card bg-white dark:bg-dark-card rounded-[2rem] border border-gray-200 dark:border-dark-border overflow-hidden shadow-sm">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-50 dark:bg-dark-hover text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-200 dark:border-dark-border">
-                    <th class="p-6">Timestamp</th>
-                    <th class="p-6">User</th>
-                    <th class="p-6">Action</th>
-                    <th class="p-6">Details</th>
-                    <th class="p-6 text-right">Source IP</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-dark-border">
-                @forelse($logs as $log)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-[#1c2128] transition-colors">
-                        <td class="p-6 whitespace-nowrap">
-                            <div class="flex items-center space-x-2 text-xs font-mono text-gray-500 dark:text-gray-400">
-                                <i data-lucide="clock" class="w-3 h-3"></i>
-                                <span>{{ $log['timestamp'] }}</span>
-                            </div>
-                        </td>
-                        <td class="p-6">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[8px] font-black uppercase text-gray-600 dark:text-gray-400">
-                                    {{ substr($log['user'], 0, 2) }}
-                                </div>
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $log['user'] }}</span>
-                            </div>
-                        </td>
-                        <td class="p-6">
-                            @php
-                                $action = strtolower($log['action']);
-                                $colorClass = 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 border-blue-100 dark:border-blue-900/30';
-                                if(str_contains($action, 'delete') || str_contains($action, 'stop') || str_contains($action, 'crash')) {
-                                    $colorClass = 'bg-red-50 dark:bg-red-900/20 text-red-600 border-red-100 dark:border-red-900/30';
-                                } elseif(str_contains($action, 'start') || str_contains($action, 'create')) {
-                                    $colorClass = 'bg-green-50 dark:bg-green-900/20 text-green-600 border-green-100 dark:border-green-900/30';
-                                }
-                            @endphp
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border {{ $colorClass }}">
-                                {{ $log['action'] }}
-                            </span>
-                        </td>
-                        <td class="p-6">
-                            <p class="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ $log['details'] }}">{{ $log['details'] }}</p>
-                        </td>
-                        <td class="p-6 text-right">
-                            <code class="text-[10px] font-mono text-gray-400 bg-gray-100 dark:bg-dark-bg px-2 py-1 rounded-lg border border-gray-200 dark:border-dark-border">{{ $log['ip'] }}</code>
-                        </td>
+    <div class="glass dark:bg-dark-card rounded-[3rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
+                    <tr class="bg-slate-50/50 dark:bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 dark:border-white/5">
+                        <th class="px-10 py-6">Operation Timestamp</th>
+                        <th class="px-10 py-6">Identity</th>
+                        <th class="px-10 py-6">Protocol Action</th>
+                        <th class="px-10 py-6">Diagnostic Details</th>
+                        <th class="px-10 py-6 text-right">Source Origin</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="p-24 text-center">
-                            <div class="flex flex-col items-center justify-center space-y-4">
-                                <div class="w-16 h-16 bg-gray-100 dark:bg-dark-bg rounded-full flex items-center justify-center text-3xl">📜</div>
-                                <div>
-                                    <p class="text-lg font-bold text-gray-900 dark:text-white">Clean Slate</p>
-                                    <p class="text-sm text-gray-500 italic">No activities have been recorded yet.</p>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                    @forelse($logs as $log)
+                        <tr class="group hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                            <td class="px-10 py-8 whitespace-nowrap">
+                                <div class="flex items-center space-x-3 text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400">
+                                        <i data-lucide="clock" class="w-4 h-4"></i>
+                                    </div>
+                                    <span>{{ $log['timestamp'] }}</span>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </td>
+                            <td class="px-10 py-8">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-[10px] font-black uppercase text-white shadow-lg shadow-brand-500/20">
+                                        {{ substr($log['user'], 0, 2) }}
+                                    </div>
+                                    <span class="text-sm font-black text-slate-900 dark:text-white tracking-tight">{{ $log['user'] }}</span>
+                                </div>
+                            </td>
+                            <td class="px-10 py-8">
+                                @php
+                                    $action = strtolower($log['action']);
+                                    $colorClass = 'bg-blue-500/10 text-blue-500 border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]';
+                                    if(str_contains($action, 'delete') || str_contains($action, 'stop') || str_contains($action, 'crash')) {
+                                        $colorClass = 'bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]';
+                                    } elseif(str_contains($action, 'start') || str_contains($action, 'create')) {
+                                        $colorClass = 'bg-green-500/10 text-green-500 border-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.1)]';
+                                    }
+                                @endphp
+                                <span class="inline-flex items-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border {{ $colorClass }}">
+                                    {{ $log['action'] }}
+                                </span>
+                            </td>
+                            <td class="px-10 py-8">
+                                <p class="text-xs font-bold text-slate-600 dark:text-slate-400 max-w-xs truncate leading-relaxed" title="{{ $log['details'] }}">{{ $log['details'] }}</p>
+                            </td>
+                            <td class="px-10 py-8 text-right">
+                                <code class="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
+                                    {{ $log['ip'] }}
+                                </code>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-10 py-32 text-center">
+                                <div class="flex flex-col items-center justify-center space-y-6 opacity-40">
+                                    <div class="relative">
+                                        <div class="absolute inset-0 bg-brand-500/20 blur-3xl rounded-full"></div>
+                                        <div class="w-24 h-24 bg-white dark:bg-slate-900 rounded-[2.5rem] flex items-center justify-center text-5xl shadow-2xl border border-slate-100 dark:border-white/5 relative z-10">📄</div>
+                                    </div>
+                                    <div class="max-w-xs mx-auto">
+                                        <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">System Slate Clean</p>
+                                        <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">No administrative activities have been logged in the current protocol window.</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

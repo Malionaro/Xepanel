@@ -5,8 +5,8 @@
 @section('content')
 <div class="space-y-20">
     <!-- Header Section -->
-    <div class="flex items-center justify-between gap-4">
-        <h2 class="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight italic uppercase tracking-[0.05em] truncate">{{ __('panel.infrastructure') }}</h2>
+    <div class="flex items-center justify-center gap-4">
+        <h2 class="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight italic uppercase tracking-[0.05em] truncate text-center">{{ __('panel.infrastructure') }}</h2>
     </div>
 
     <!-- Navigation Pill -->

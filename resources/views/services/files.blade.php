@@ -7,24 +7,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
 
 <div class="space-y-10">
-    <!-- Breadcrumbs -->
-    <div class="flex items-center p-1.5 glass dark:bg-white/5 border-slate-200 dark:border-white/10 rounded-2xl shadow-sm w-fit">
-        <a href="{{ route('services.index') }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
-            <i data-lucide="server" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.my_services') }}</span>
-        </a>
-        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
-        <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
-            <i data-lucide="terminal" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">{{ $service->name }}</span>
-        </a>
-        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
-        <div class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400">
-            <i data-lucide="folder-open" class="w-4 h-4"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.file_manager') }}</span>
-        </div>
-    </div>
-
     <!-- File Manager View -->
     <div id="file-manager-view" class="space-y-10 animate-fade-in">
         <div class="flex items-center justify-between gap-4">

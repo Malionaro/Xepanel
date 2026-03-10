@@ -4,8 +4,8 @@
     $panelIcon = \App\Models\Setting::get('panel_icon', 'layers');
     $panelName = \App\Models\Setting::get('panel_name', 'FilePanel');
 
-    // Sidebar Visibility: Hidden for immersive service management
-    $showSidebar = !request()->routeIs('services.*') && !request()->routeIs('api.docs');
+    // Sidebar Visibility: Always show sidebar now to ensure navigation via Administrator button is always possible
+    $showSidebar = !request()->routeIs('api.docs');
     
     // Get dynamic version from Git
     $gitHash = @shell_exec('git rev-parse --short HEAD');
@@ -123,13 +123,13 @@
 
                             <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.api-keys') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="key" class="w-4 h-4"></i>
-                                <span>{{ __('panel.api_keys') }}</span>
+                                <span>API Schlüssel</span>
                             </a>
                         </div>
                     </div>
 
                     @if(auth()->user()->role === 'admin')
-                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
+                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*') || request()->routeIs('api.docs')) ? 'true' : 'false' }} }">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
                         
                         <!-- Collapsible Administrator Menu -->
@@ -152,23 +152,27 @@
                             </a>
                             <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('eggs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="egg" class="w-4 h-4"></i>
-                                <span>{{ __('panel.egg_templates') }}</span>
+                                <span>Egg-Vorlagen</span>
                             </a>
                             <a href="{{ route('network.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('network.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="globe" class="w-4 h-4"></i>
-                                <span>{{ __('panel.network_ports') }}</span>
+                                <span>Netzwerk</span>
                             </a>
                             <a href="{{ route('logs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('logs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="scroll-text" class="w-4 h-4"></i>
-                                <span>{{ __('panel.activity_logs') }}</span>
+                                <span>Audit Trail</span>
                             </a>
                             <a href="{{ route('settings.security') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.security') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="shield-alert" class="w-4 h-4"></i>
-                                <span>Security Audit</span>
+                                <span>Security & Sessions</span>
                             </a>
                             <a href="{{ route('settings.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.index') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="settings" class="w-4 h-4"></i>
                                 <span>{{ __('panel.panel_settings') }}</span>
+                            </a>
+                            <a href="{{ route('api.docs') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('api.docs') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="book-open" class="w-4 h-4"></i>
+                                <span>Docs</span>
                             </a>
                         </div>
                     </div>
@@ -205,14 +209,9 @@
                     <button class="lg:hidden p-2.5 rounded-xl glass-hover text-slate-500" @click="mobileSidebar = true">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
-                    @else
-                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group">
-                        <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-110 transition-transform">
-                            <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
-                        </div>
-                        <span class="text-lg font-black tracking-tighter text-slate-900 dark:text-white">{{ $panelName }}</span>
-                    </a>
                     @endif
+                    
+                    <h1 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">@yield('header_title', __('panel.overview'))</h1>
                 </div>
                 
                 <div class="flex items-center space-x-4">
@@ -230,7 +229,7 @@
             </header>
 
             <main class="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
-                <div class="{{ $showSidebar ? 'max-w-7xl' : 'w-full' }} mx-auto animate-fade-in">
+                <div class="max-w-7xl mx-auto animate-fade-in">
                     @yield('content')
                 </div>
             </main>
