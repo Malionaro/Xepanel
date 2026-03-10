@@ -84,7 +84,6 @@
     </style>
 </head>
 <body class="bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-300 transition-colors duration-300" x-data="{ mobileSidebar: false }">
-    <!-- Background Accents -->
     <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-500/5 dark:bg-brand-500/10 blur-[120px] rounded-full"></div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-700/5 dark:bg-brand-700/10 blur-[120px] rounded-full"></div>
@@ -92,7 +91,6 @@
 
     <div class="flex h-screen relative z-10">
         @if($showSidebar)
-        <!-- Sidebar -->
         <aside class="w-72 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border hidden lg:flex flex-col shrink-0">
             <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
                 <a href="{{ route('services.index') }}" class="flex items-center space-x-4 mb-10 group">
@@ -103,7 +101,6 @@
                 </a>
 
                 <nav class="space-y-2">
-                    <!-- User Account Section -->
                     <div class="pt-2" x-data="{ open: {{ (request()->routeIs('user.*')) ? 'true' : 'false' }} }">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.my_account') }}</p>
                         
@@ -128,11 +125,10 @@
                         </div>
                     </div>
 
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->user()?->role === 'admin')
                     <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
                         
-                        <!-- Collapsible Administrator Menu -->
                         <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
                             <div class="flex items-center space-x-3">
                                 <i data-lucide="shield-check" class="w-5 h-5"></i>
@@ -182,8 +178,8 @@
                         <i data-lucide="user" class="w-5 h-5"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()->role }}</p>
+                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()?->name ?? 'Gast' }}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()?->role ?? 'N/A' }}</p>
                     </div>
                 </div>
                 
@@ -216,7 +212,7 @@
                 </div>
                 
                 <div class="flex items-center space-x-4">
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->user()?->role === 'admin')
                     <a href="{{ route('dashboard') }}" class="px-6 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-white transition-all shadow-sm">
                         ADMINISTRATION
                     </a>
@@ -237,7 +233,6 @@
         </div>
     </div>
 
-    <!-- Mobile Sidebar Drawer -->
     <div x-show="mobileSidebar" class="fixed inset-0 z-[100] lg:hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="mobileSidebar = false"></div>
         <aside class="absolute top-0 left-0 bottom-0 w-72 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transform transition-transform duration-300" :class="mobileSidebar ? 'translate-x-0' : '-translate-x-full'">
