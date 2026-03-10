@@ -4,8 +4,8 @@
     $panelIcon = \App\Models\Setting::get('panel_icon', 'layers');
     $panelName = \App\Models\Setting::get('panel_name', 'FilePanel');
 
-    // Sidebar Visibility: Always show sidebar now to ensure navigation via Administrator button is always possible
-    $showSidebar = !request()->routeIs('api.docs');
+    // Sidebar Visibility: Hidden for infrastructure (services) related pages to provide immersive full-width view
+    $showSidebar = !request()->routeIs('services.*') && !request()->routeIs('api.docs');
     
     // Get dynamic version from Git
     $gitHash = @shell_exec('git rev-parse --short HEAD');
@@ -129,7 +129,7 @@
                     </div>
 
                     @if(auth()->user()->role === 'admin')
-                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*') || request()->routeIs('api.docs')) ? 'true' : 'false' }} }">
+                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
                         
                         <!-- Collapsible Administrator Menu -->
@@ -170,10 +170,6 @@
                                 <i data-lucide="settings" class="w-4 h-4"></i>
                                 <span>{{ __('panel.panel_settings') }}</span>
                             </a>
-                            <a href="{{ route('api.docs') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('api.docs') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
-                                <i data-lucide="book-open" class="w-4 h-4"></i>
-                                <span>Docs</span>
-                            </a>
                         </div>
                     </div>
                     @endif
@@ -211,7 +207,12 @@
                     </button>
                     @endif
                     
-                    <h1 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">@yield('header_title', __('panel.overview'))</h1>
+                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-110 transition-transform">
+                            <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-lg font-black tracking-tighter text-slate-900 dark:text-white">{{ $panelName }}</span>
+                    </a>
                 </div>
                 
                 <div class="flex items-center space-x-4">
