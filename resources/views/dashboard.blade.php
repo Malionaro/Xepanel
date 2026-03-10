@@ -4,19 +4,6 @@
 
 @section('content')
 <div class="space-y-20 pt-10">
-    <!-- Breadcrumbs -->
-    <div class="flex items-center p-1.5 glass dark:bg-white/5 border-slate-200 dark:border-white/10 rounded-2xl shadow-sm w-fit">
-        <a href="{{ route('services.index') }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
-            <i data-lucide="server" class="w-4 h-4"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.my_services') }}</span>
-        </a>
-        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
-        <div class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400">
-            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.analytics_dashboard') }}</span>
-        </div>
-    </div>
-
     <!-- Hero / Welcome -->
     <div class="relative overflow-hidden bg-gradient-to-br from-brand-600 to-brand-900 rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 text-white shadow-2xl shadow-brand-500/20">
         <!-- Abstract Decoration -->

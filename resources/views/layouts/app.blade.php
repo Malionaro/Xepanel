@@ -1,30 +1,21 @@
 @php
     $currentRoute = request()->route() ? request()->route()->getName() : '';
-    $hideSidebarOn = [
-        'services.index', 
-        'services.show', 
-        'services.files', 
-        'services.create', 
-        'services.edit',
-        'services.backups',
-        'services.databases',
-        'services.schedules',
-        'services.schedules.edit',
-        'services.permissions'
-    ];
-    $showSidebar = !in_array($currentRoute, $hideSidebarOn) || $currentRoute === 'dashboard';
     $brandColor = \App\Models\Setting::get('brand_primary_color', '#8b5cf6');
     $panelIcon = \App\Models\Setting::get('panel_icon', 'layers');
+    $panelName = \App\Models\Setting::get('panel_name', 'FilePanel');
 
+    // Sidebar Visibility: Hidden for immersive service management
+    $showSidebar = !request()->routeIs('services.*') && !request()->routeIs('api.docs');
+    
     // Get dynamic version from Git
     $gitHash = @shell_exec('git rev-parse --short HEAD');
     $appVersion = $gitHash ? 'BUILD-' . trim($gitHash) : '1.0.0-BETA1';
-    @endphp<!DOCTYPE html>
+@endphp<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ \App\Models\Setting::get('panel_name', 'FilePanel') }}</title>
+    <title>{{ $panelName }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
@@ -64,58 +55,8 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        @keyframes slide-in-right {
-            0% { transform: translateX(100px); opacity: 0; filter: blur(10px); }
-            100% { transform: translateX(0); opacity: 1; filter: blur(0); }
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
         
-        @keyframes slide-out-left {
-            0% { transform: translateX(0); opacity: 1; filter: blur(0); }
-            100% { transform: translateX(-100px); opacity: 0; filter: blur(10px); }
-        }
-
-        @keyframes slide-in-left {
-            0% { transform: translateX(-100px); opacity: 0; filter: blur(10px); }
-            100% { transform: translateX(0); opacity: 1; filter: blur(0); }
-        }
-
-        @keyframes slide-out-right {
-            0% { transform: translateX(0); opacity: 1; filter: blur(0); }
-            100% { transform: translateX(100px); opacity: 0; filter: blur(10px); }
-        }
-
-        .animate-slide-in-right { animation: slide-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .animate-slide-out-left { animation: slide-out-left 0.4s ease-in forwards; }
-        .animate-slide-in-left { animation: slide-in-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .animate-slide-out-right { animation: slide-out-right 0.4s ease-in forwards; }
-
-        @keyframes liquid-flow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes alarm-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.5); }
-            50% { box-shadow: 0 0 30px 5px rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.8); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.5); }
-        }
-
-        .liquid-bar {
-            background-size: 200% 200%;
-            animation: liquid-flow 3s linear infinite;
-        }
-
-        .alarm-state {
-            animation: alarm-pulse 1.5s infinite !important;
-        }
-
-        .sidebar-item-active { 
-            background: linear-gradient(135deg, {{ $brandColor }} 0%, {{ $brandColor }}dd 100%); 
-            color: white !important;
-            box-shadow: 0 10px 20px -5px {{ $brandColor }}66;
-        }
         .glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
@@ -126,256 +67,213 @@
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .glass-hover:hover {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(226, 232, 240, 1);
-        }
-        .dark .glass-hover:hover {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        .glow-purple { box-shadow: 0 10px 15px -3px {{ $brandColor }}22; }
-        .dark .glow-purple { box-shadow: 0 0 20px {{ $brandColor }}33; }
-        .glow-green { box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.1); }
-        .dark .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
-        .hover-lift { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .hover-lift:hover { transform: translateY(-4px); }
         
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        .sidebar-item-active { 
+            background: linear-gradient(135deg, {{ $brandColor }} 0%, {{ $brandColor }}dd 100%); 
+            color: white !important;
+            box-shadow: 0 10px 20px -5px {{ $brandColor }}66;
         }
-        .pulse-online { animation: pulse-glow 2s infinite; }
-        
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.2); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.4); }
+
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
     </style>
 </head>
-<body class="bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-300 transition-colors duration-300">
+<body class="bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-300 transition-colors duration-300" x-data="{ mobileSidebar: false }">
     <!-- Background Accents -->
     <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-500/5 dark:bg-brand-500/10 blur-[120px] rounded-full"></div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-700/5 dark:bg-brand-700/10 blur-[120px] rounded-full"></div>
     </div>
 
-    <div class="flex h-screen overflow-hidden relative z-10">
-        <!-- Sidebar Overlay (Mobile only) -->
-        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-20 hidden lg:hidden"></div>
-
+    <div class="flex h-screen relative z-10">
+        @if($showSidebar)
         <!-- Sidebar -->
-        <aside id="main-sidebar" 
-               class="-translate-x-full w-0 {{ $showSidebar ? 'lg:translate-x-0 lg:w-72 lg:static' : 'lg:hidden' }} fixed inset-y-0 left-0 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transition-all duration-500 z-30 overflow-hidden">
-            <div class="p-8 flex justify-between items-center min-w-[18rem]">
-                <a href="{{ route('services.index') }}" class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
-                        <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
+        <aside class="w-72 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border hidden lg:flex flex-col shrink-0">
+            <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+                <a href="{{ route('services.index') }}" class="flex items-center space-x-4 mb-10 group">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-500 flex items-center justify-center text-white shadow-xl shadow-brand-500/20 group-hover:scale-110 transition-transform">
+                        <i data-lucide="{{ $panelIcon }}" class="w-7 h-7"></i>
                     </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">{{ \App\Models\Setting::get('panel_name', 'FilePanel') }}</span>
+                    <span class="text-xl font-black tracking-tighter text-slate-900 dark:text-white">{{ $panelName }}</span>
                 </a>
-                <!-- Close button mobile -->
-                <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-500">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+
+                <nav class="space-y-2">
+                    <!-- User Account Section -->
+                    <div class="pt-2" x-data="{ open: {{ (request()->routeIs('user.*')) ? 'true' : 'false' }} }">
+                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.my_account') }}</p>
+                        
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="user-cog" class="w-5 h-5"></i>
+                                <span class="text-sm font-bold">Profile Settings</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
+                            <a href="{{ route('user.two-factor') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.two-factor') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                <span>{{ __('panel.security_2fa') }}</span>
+                            </a>
+
+                            <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.api-keys') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                                <span>{{ __('panel.api_keys') }}</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    @if(auth()->user()->role === 'admin')
+                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
+                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
+                        
+                        <!-- Collapsible Administrator Menu -->
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                <span class="text-sm font-bold">Administrator</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
+                            <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('dashboard') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                                <span>Global Analytics</span>
+                            </a>
+                            <a href="{{ route('users.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('users.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                <span>{{ __('panel.user_management') }}</span>
+                            </a>
+                            <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('eggs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="egg" class="w-4 h-4"></i>
+                                <span>{{ __('panel.egg_templates') }}</span>
+                            </a>
+                            <a href="{{ route('network.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('network.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="globe" class="w-4 h-4"></i>
+                                <span>{{ __('panel.network_ports') }}</span>
+                            </a>
+                            <a href="{{ route('logs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('logs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="scroll-text" class="w-4 h-4"></i>
+                                <span>{{ __('panel.activity_logs') }}</span>
+                            </a>
+                            <a href="{{ route('settings.security') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.security') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                                <span>Security Audit</span>
+                            </a>
+                            <a href="{{ route('settings.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.index') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="settings" class="w-4 h-4"></i>
+                                <span>{{ __('panel.panel_settings') }}</span>
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                </nav>
             </div>
-            <!-- ... (rest of sidebar content remains the same until header) ... -->
 
-            <nav class="flex-1 overflow-y-auto px-4 py-2 space-y-8">
-                <!-- Main Nav -->
-                <div>
-                    <span class="px-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{{ __('panel.main_menu') }}</span>
-                    <div class="mt-4 space-y-1">
-                        <button onclick="navigateWithAnimation('{{ route('services.index') }}', 'right')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('services.index') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="server" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.my_services') }}</span>
-                        </button>
-                        <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('dashboard') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.dashboard') }}</span>
-                        </a>
+            <div class="mt-auto p-8 border-t border-slate-100 dark:border-slate-800/50">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500">
+                        <i data-lucide="user" class="w-5 h-5"></i>
                     </div>
-                </div>
-
-                @if(Auth::user() && Auth::user()->role == 'admin')
-                <div>
-                    <span class="px-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{{ __('panel.administration') }}</span>
-                    <div class="mt-4 space-y-1">
-                        <a href="{{ route('settings.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('settings.*') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="settings" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.panel_settings') }}</span>
-                        </a>
-                        <a href="{{ route('users.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('users.*') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="users" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.user_management') }}</span>
-                        </a>
-                        <a href="{{ route('network.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('network.*') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="network" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.network_ports') }}</span>
-                        </a>
-                        <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('eggs.*') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="egg" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.egg_templates') }}</span>
-                        </a>
-                        <a href="{{ route('logs.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('logs.*') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="history" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.activity_logs') }}</span>
-                        </a>
+                    <div class="min-w-0">
+                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()->name }}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()->role }}</p>
                     </div>
-                </div>
-                @endif
-
-                <div>
-                    <span class="px-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{{ __('panel.my_account') }}</span>
-                    <div class="mt-4 space-y-1">
-                        <a href="{{ route('user.two-factor') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('user.two-factor') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="shield-check" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.security_2fa') }}</span>
-                        </a>
-                        <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('user.api-keys') ? 'sidebar-item-active' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-hover hover:text-brand-600 dark:hover:text-white' }}">
-                            <i data-lucide="key" class="w-5 h-5"></i>
-                            <span class="font-semibold text-sm">{{ __('panel.api_keys') }}</span>
-                        </a>
-                    </div>
-                </div>
-            </nav>
-
-            @auth
-            <div class="p-6 border-t border-slate-200 dark:border-dark-border glass dark:bg-transparent">
-                <div class="flex items-center space-x-4 p-3 rounded-2xl bg-white/50 dark:bg-slate-900/10 border border-white/20 dark:border-white/5 shadow-sm">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-[11px] font-black text-white shadow-lg uppercase relative">
-                        {{ substr(Auth::user()->name, 0, 2) }}
-                        <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-[#020617] rounded-full"></div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-black truncate text-slate-900 dark:text-white tracking-tight">{{ Auth::user()->name }}</p>
-                        <p class="text-[9px] text-green-500 uppercase font-bold tracking-widest flex items-center">
-                            <span class="w-1 h-1 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
-                            Online
-                        </p>
-                    </div>
-                    <form action="{{ route('logout') }}" method="POST" class="shrink-0">
-                        @csrf
-                        <button class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                            <i data-lucide="log-out" class="w-4 h-4"></i>
-                        </button>
-                    </form>
                 </div>
                 
-                <!-- Versioning -->
-                <div class="mt-4 px-4 flex items-center justify-between opacity-30 group-hover:opacity-100 transition-opacity">
-                    <span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">System Kernel</span>
-                    <span class="text-[8px] font-mono font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">{{ $appVersion }}</span>
-                </div>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button class="w-full flex items-center space-x-3 px-5 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all duration-300 group">
+                        <i data-lucide="log-out" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.sign_out') }}</span>
+                    </button>
+                </form>
             </div>
-            @endauth
         </aside>
+        @endif
 
-        <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden relative">
-            @if(\App\Models\Setting::get('maintenance_mode', false))
-                <div class="bg-red-600/90 backdrop-blur-md text-white text-center py-2 text-[10px] font-black uppercase tracking-[0.3em] shadow-lg relative z-50">
-                    ⚠️ {{ __('panel.maintenance_mode') }} ⚠️
+            <header class="h-20 glass dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-6 md:px-10 shrink-0 z-10">
+                <div class="flex items-center space-x-4">
+                    @if($showSidebar)
+                    <button class="lg:hidden p-2.5 rounded-xl glass-hover text-slate-500" @click="mobileSidebar = true">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    @else
+                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-110 transition-transform">
+                            <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-lg font-black tracking-tighter text-slate-900 dark:text-white">{{ $panelName }}</span>
+                    </a>
+                    @endif
                 </div>
-            @endif
-            
-            <header class="h-20 glass dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 md:px-10 shrink-0 z-10">
-                <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <!-- Hamburger Button Mobile -->
-                        <button onclick="toggleSidebar()" class="lg:hidden p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border">
-                            <i data-lucide="menu" class="w-5 h-5"></i>
-                        </button>
-                        <h1 class="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">@yield('header_title', __('panel.overview'))</h1>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border">
-                            <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-brand-400"></i>
-                            <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-600"></i>
-                        </button>
-                    </div>
+                
+                <div class="flex items-center space-x-4">
+                    @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('dashboard') }}" class="px-6 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-white transition-all shadow-sm">
+                        ADMINISTRATION
+                    </a>
+                    @endif
+
+                    <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border">
+                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-brand-400"></i>
+                        <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-600"></i>
+                    </button>
                 </div>
             </header>
 
-            <main class="flex-1 overflow-y-auto z-0 flex flex-col items-center">
-                <div class="w-full max-w-7xl p-4 md:p-10 pt-12 md:pt-20 pb-32 space-y-10 md:space-y-16">
+            <main class="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
+                <div class="{{ $showSidebar ? 'max-w-7xl' : 'w-full' }} mx-auto animate-fade-in">
                     @yield('content')
                 </div>
             </main>
         </div>
     </div>
+
+    <!-- Mobile Sidebar Drawer -->
+    <div x-show="mobileSidebar" class="fixed inset-0 z-[100] lg:hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="mobileSidebar = false"></div>
+        <aside class="absolute top-0 left-0 bottom-0 w-72 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transform transition-transform duration-300" :class="mobileSidebar ? 'translate-x-0' : '-translate-x-full'">
+            <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white">
+                            <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-lg font-black tracking-tighter text-slate-900 dark:text-white">{{ $panelName }}</span>
+                    </div>
+                    <button @click="mobileSidebar = false" class="text-slate-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <nav class="space-y-4">
+                    <a href="{{ route('services.index') }}" class="flex items-center space-x-3 px-5 py-3 rounded-xl transition-all text-slate-500">
+                        <i data-lucide="server" class="w-5 h-5"></i>
+                        <span class="text-sm font-bold">My Services</span>
+                    </a>
+                </nav>
+            </div>
+        </aside>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('main-sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            const isOpen = !sidebar.classList.contains('-translate-x-full');
-            
-            if (isOpen) {
-                sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('translate-x-0', 'w-72');
-                sidebar.classList.add('w-0');
-                overlay.classList.add('hidden');
-            } else {
-                sidebar.classList.remove('-translate-x-full', 'w-0');
-                sidebar.classList.add('translate-x-0', 'w-72');
-                overlay.classList.remove('hidden');
-            }
-        }
-        function navigateWithAnimation(url, direction = 'left') {
-            const mainContent = document.querySelector('main > div');
-            const sidebar = document.getElementById('main-sidebar');
-            
-            if (direction === 'right') {
-                mainContent.classList.add('animate-slide-out-right');
-                sidebar.classList.add('opacity-0', 'invisible');
-                sidebar.style.width = '0';
-            } else {
-                mainContent.classList.add('animate-slide-out-left');
-            }
-
-            setTimeout(() => {
-                window.location.href = url;
-            }, 400);
-        }
-
         function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
-            else { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
+            if (document.documentElement.classList.contains('dark')) { 
+                document.documentElement.classList.remove('dark'); 
+                localStorage.setItem('theme', 'light'); 
+            } else { 
+                document.documentElement.classList.add('dark'); 
+                localStorage.setItem('theme', 'dark'); 
+            }
         }
-        // Default sidebar visibility logic
-        document.addEventListener('DOMContentLoaded', () => {
-            const sidebar = document.getElementById('main-sidebar');
-            const mainContent = document.querySelector('main > div');
-            const currentRoute = '{{ request()->route() ? request()->route()->getName() : '' }}';
-
-            if (currentRoute === 'dashboard') {
-                mainContent.classList.add('animate-slide-in-right');
-            } else {
-                mainContent.classList.add('animate-slide-in-left');
-            }
-
-            // Sidebar should be HIDDEN only on these specific service-centric pages
-            const hideSidebarOn = [
-                'services.index', 
-                'services.show', 
-                'services.files', 
-                'services.create', 
-                'services.edit',
-                'services.backups',
-                'services.databases',
-                'services.schedules',
-                'services.schedules.edit',
-                'services.permissions'
-            ];
-
-            if (!hideSidebarOn.includes(currentRoute) || currentRoute === 'dashboard') {
-                sidebar.classList.remove('w-0', 'opacity-0', 'invisible');
-                sidebar.classList.add('w-72', 'opacity-100', 'visible');
-            }
-        });
-
         lucide.createIcons();
     </script>
 </body>

@@ -7,14 +7,6 @@
     <!-- Header Section -->
     <div class="flex items-center justify-between gap-4">
         <h2 class="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight italic uppercase tracking-[0.05em] truncate">{{ __('panel.infrastructure') }}</h2>
-        
-        @if(Auth::user()->role === 'admin')
-        <button onclick="navigateWithAnimation('{{ route('dashboard') }}')" class="flex items-center space-x-2 px-4 sm:px-10 py-2.5 sm:py-4 rounded-[2rem] bg-slate-900 dark:bg-brand-500 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] shadow-2xl shadow-brand-500/40 hover:scale-105 active:scale-95 transition-all group shrink-0">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 h-4 transition-transform group-hover:rotate-12"></i>
-            <span class="hidden xs:inline">{{ __('panel.initialise_admin') }}</span>
-            <span class="xs:hidden">{{ __('panel.administration') }}</span>
-        </button>
-        @endif
     </div>
 
     <!-- Navigation Pill -->

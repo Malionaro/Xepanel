@@ -4,62 +4,77 @@
 
 @section('content')
 <div class="space-y-8">
-    <div class="flex items-center space-x-2 text-gray-500 dark:text-gray-400 mb-2">
-        <a href="{{ route('dashboard') }}" class="hover:text-brand-500 transition-colors">Dashboard</a>
-        <i data-lucide="chevron-right" class="w-3 h-3"></i>
-        <a href="{{ route('services.show', $service->id) }}" class="hover:text-brand-500 transition-colors">{{ $service->name }}</a>
-        <i data-lucide="chevron-right" class="w-3 h-3"></i>
-        <span class="text-gray-900 dark:text-white font-bold">Environment Variables</span>
+    <!-- Breadcrumbs -->
+    <div class="flex items-center p-1.5 glass dark:bg-white/5 border-slate-200 dark:border-white/10 rounded-2xl shadow-sm w-fit mb-6">
+        <a href="{{ route('services.index') }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
+            <i data-lucide="server" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.my_services') }}</span>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
+        <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
+            <i data-lucide="terminal" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">{{ $service->name }}</span>
+        </a>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
+        <div class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400">
+            <i data-lucide="list" class="w-4 h-4"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">Environment Variables</span>
+        </div>
     </div>
 
-    <div class="flex items-center justify-between">
-        <h2 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white">Runtime Environment</h2>
-        <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all hover:shadow-md">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Back to Service</span>
-        </a>
+    <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col">
+            <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Runtime Environment</h2>
+            <p class="text-xs font-bold text-slate-500 mt-1">Manage environment variables for {{ $service->name }}</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1 shadow-sm">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Back</span>
+            </a>
+        </div>
     </div>
 
     @if(session('status'))
-        <div class="bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 text-green-700 dark:text-green-400 p-4 rounded-2xl flex items-center space-x-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <span class="text-sm font-medium">{{ session('status') }}</span>
+        <div class="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-5 rounded-3xl flex items-center space-x-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <i data-lucide="check-circle" class="w-6 h-6"></i>
+            </div>
+            <span class="text-sm font-bold">{{ session('status') }}</span>
         </div>
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- List of current ENVs -->
         <div class="lg:col-span-2 space-y-4">
-            <div class="card bg-white dark:bg-dark-card rounded-[2rem] border border-gray-200 dark:border-dark-border overflow-hidden shadow-sm transition-all duration-300">
-                <div class="px-6 py-4 bg-gray-50 dark:bg-dark-hover border-b border-gray-200 dark:border-dark-border">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-400">Current Variables</h3>
+            <div class="glass dark:bg-dark-card rounded-[2.5rem] border border-slate-200 dark:border-dark-border overflow-hidden shadow-sm transition-all duration-300">
+                <div class="px-8 py-6 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 flex items-center">
+                    <i data-lucide="list" class="w-4 h-4 text-brand-500 mr-3"></i>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Current Variables</h3>
                 </div>
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-100 dark:border-dark-border">
-                            <th class="p-6">Key</th>
-                            <th class="p-6">Value</th>
-                            <th class="p-6 text-right">Actions</th>
+                        <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 dark:border-white/5">
+                            <th class="px-8 py-4">Key</th>
+                            <th class="px-8 py-4">Value</th>
+                            <th class="px-8 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-dark-border">
+                    <tbody class="divide-y divide-slate-100 dark:divide-white/5">
                         @forelse($service->env_vars ?? [] as $key => $value)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-[#1c2128] transition-colors group">
-                                <td class="p-6">
-                                    <div class="flex items-center space-x-2">
-                                        <i data-lucide="variable" class="w-3.5 h-3.5 text-brand-500"></i>
-                                        <span class="font-mono text-sm font-bold text-gray-900 dark:text-white">{{ $key }}</span>
-                                    </div>
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group">
+                                <td class="px-8 py-5">
+                                    <span class="font-mono text-sm font-bold text-slate-900 dark:text-white">{{ $key }}</span>
                                 </td>
-                                <td class="p-6">
-                                    <code class="px-2 py-1 bg-gray-100 dark:bg-dark-bg rounded-lg font-mono text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-dark-border">{{ $value }}</code>
+                                <td class="px-8 py-5">
+                                    <code class="px-3 py-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-lg font-mono text-xs text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 shadow-sm">{{ $value }}</code>
                                 </td>
-                                <td class="p-6 text-right">
+                                <td class="px-8 py-5 text-right">
                                     <form action="{{ route('services.envs.destroy', $service->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="key" value="{{ $key }}">
-                                        <button type="submit" class="p-2 text-gray-400 hover:text-red-500 transition-colors" onclick="return confirm('Remove this variable?')">
+                                        <button type="submit" class="p-2 text-slate-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/10 opacity-0 group-hover:opacity-100" onclick="return confirm('Remove this variable?')">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -67,10 +82,15 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="p-12 text-center">
-                                    <div class="flex flex-col items-center justify-center space-y-3">
-                                        <div class="w-12 h-12 bg-gray-100 dark:bg-dark-bg rounded-full flex items-center justify-center text-xl">Empty</div>
-                                        <p class="text-sm text-gray-500 italic">No environment variables defined.</p>
+                                <td colspan="3" class="p-16 text-center">
+                                    <div class="flex flex-col items-center justify-center space-y-4">
+                                        <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl flex items-center justify-center text-slate-400 border border-slate-200 dark:border-slate-700/50">
+                                            <i data-lucide="package-open" class="w-8 h-8"></i>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-sm font-bold text-slate-900 dark:text-white">No Variables Configured</p>
+                                            <p class="text-[10px] font-black tracking-widest uppercase text-slate-400 mt-1">Add one to the right</p>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -82,33 +102,37 @@
 
         <!-- Add new ENV form -->
         <div class="lg:col-span-1">
-            <form action="{{ route('services.envs.store', $service->id) }}" method="POST" class="card bg-white dark:bg-dark-card p-8 rounded-[2.5rem] border border-gray-200 dark:border-dark-border shadow-xl space-y-6">
+            <form action="{{ route('services.envs.store', $service->id) }}" method="POST" class="glass dark:bg-dark-card p-8 md:p-10 rounded-[2.5rem] border border-slate-200 dark:border-dark-border shadow-sm space-y-8">
                 @csrf
-                <div class="flex items-center space-x-3 mb-2">
-                    <div class="w-10 h-10 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500">
+                <div class="flex items-center space-x-4 mb-2">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 border border-brand-500/20">
                         <i data-lucide="plus-circle" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="font-black text-xl text-gray-900 dark:text-white tracking-tight">Add Variable</h3>
+                    <div>
+                        <h3 class="font-black text-xl text-slate-900 dark:text-white tracking-tight">Add Variable</h3>
+                        <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">Configure Environment</p>
+                    </div>
                 </div>
                 
-                <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Key Name</label>
-                    <input type="text" name="key" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 px-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm uppercase" required placeholder="e.g. PORT">
+                <div class="space-y-3">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Key Name</label>
+                    <input type="text" name="key" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-5 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-slate-900 dark:text-white font-mono text-sm uppercase shadow-sm" required placeholder="e.g. PORT">
                 </div>
                 
-                <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Value</label>
-                    <input type="text" name="value" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 px-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" required placeholder="e.g. 8080">
+                <div class="space-y-3">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Value</label>
+                    <input type="text" name="value" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-5 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-slate-900 dark:text-white font-mono text-sm shadow-sm" required placeholder="e.g. 8080">
                 </div>
                 
-                <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-brand-500/25 active:scale-95 flex items-center justify-center space-x-2">
-                    <i data-lucide="save" class="w-5 h-5"></i>
-                    <span>ADD VARIABLE</span>
+                <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 md:py-5 rounded-2xl transition-all shadow-xl shadow-brand-500/25 active:scale-95 flex items-center justify-center space-x-3 text-xs group">
+                    <i data-lucide="save" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    <span class="tracking-widest uppercase">Add Variable</span>
                 </button>
 
-                <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-2xl">
-                    <p class="text-[10px] text-blue-700 dark:text-blue-400 font-bold leading-relaxed">
-                        Variables are passed to the process environment during startup.
+                <div class="mt-8 p-5 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-start space-x-3">
+                    <i data-lucide="info" class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"></i>
+                    <p class="text-[10px] text-blue-600 dark:text-blue-400 font-bold leading-relaxed uppercase tracking-wider">
+                        Variables are passed to the process environment during startup. A restart may be required.
                     </p>
                 </div>
             </form>
