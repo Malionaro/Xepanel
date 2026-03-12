@@ -197,14 +197,14 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">{{ __('panel.stability') }}</span>
-                            <span class="text-[9px] font-black {{ $service->auto_restart ? 'text-green-500' : 'text-slate-400' }}">{{ $service->auto_restart ? 'OPTIMIZED' : 'LEGACY' }}</span>
+                            <span class="text-[9px] font-black {{ $service->auto_restart ? 'text-green-500' : 'text-slate-400' }}">{{ $service->auto_restart ? __('panel.optimized') : __('panel.legacy') }}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             @if(Auth::user()->role === 'admin')
-            <form action="{{ route('services.destroy', $service->id) }}" method="POST" onsubmit="return confirm('CRITICAL: Permanent deletion?')" class="px-8">
+            <form action="{{ route('services.destroy', $service->id) }}" method="POST" onsubmit="return confirm('{{ __('panel.confirm_delete_service') }}')" class="px-8">
                 @csrf
                 @method('DELETE')
                 <button class="w-full flex items-center justify-center space-x-2 text-red-500/40 hover:text-red-500 text-[9px] font-black uppercase tracking-[0.2em] transition-all">

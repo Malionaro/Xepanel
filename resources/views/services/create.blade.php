@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('header_title', 'Create Service')
+@section('header_title', __('panel.create_service'))
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-10">
@@ -8,20 +8,20 @@
     <div class="flex items-center p-1.5 glass dark:bg-white/5 border-slate-200 dark:border-white/10 rounded-2xl shadow-sm w-fit">
         <a href="{{ route('services.index') }}" class="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-all group">
             <i data-lucide="server" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">My Services</span>
+            <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.my_services') }}</span>
         </a>
         <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"></i>
         <div class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">New Service</span>
+            <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.new_service') }}</span>
         </div>
     </div>
 
     <div class="flex items-center justify-between">
-        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Deploy Instance</h2>
+        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.deploy_instance_title') }}</h2>
         <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
             <i data-lucide="x" class="w-4 h-4"></i>
-            <span>Cancel</span>
+            <span>{{ __('panel.cancel') }}</span>
         </a>
     </div>
 
@@ -32,12 +32,12 @@
                 <div class="p-2 bg-white/20 rounded-lg">
                     <i data-lucide="egg" class="w-5 h-5 text-white"></i>
                 </div>
-                <h3 class="text-xl font-black tracking-tight">Express Configuration (Eggs)</h3>
+                <h3 class="text-xl font-black tracking-tight">{{ __('panel.express_configuration') }}</h3>
             </div>
-            <p class="text-brand-100 text-sm mt-1">Select a pre-configured template for rapid deployment.</p>
+            <p class="text-brand-100 text-sm mt-1">{{ __('panel.express_configuration_desc') }}</p>
             <div class="mt-6">
                 <select id="template-selector" onchange="applyTemplate()" class="w-full md:w-72 bg-white/10 border border-white/20 rounded-xl py-2.5 px-4 text-white focus:bg-white focus:text-gray-900 outline-none transition-all font-bold text-sm">
-                    <option value="" class="text-gray-900">-- Choose a Template --</option>
+                    <option value="" class="text-gray-900">{{ __('panel.choose_template') }}</option>
                     @foreach($eggs as $egg)
                         <option value="{{ $egg->id }}" class="text-gray-900">{{ $egg->name }}</option>
                     @endforeach
@@ -55,7 +55,7 @@
         <div id="egg-variables-container" class="hidden space-y-6 bg-gray-50 dark:bg-dark-bg/30 p-8 rounded-[2rem] border border-dashed border-gray-200 dark:border-dark-border">
             <h3 class="text-xs font-black uppercase tracking-[0.2em] text-brand-500 flex items-center">
                 <i data-lucide="settings-2" class="w-3 h-3 mr-2"></i>
-                Egg-Specific Settings
+                {{ __('panel.egg_specific_settings') }}
             </h3>
             <div id="egg-variables-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Dynamic fields will be injected here -->
@@ -64,7 +64,7 @@
         
         <!-- Deployment Type Selection -->
         <div class="space-y-4">
-            <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Deployment Type</label>
+            <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.deployment_type') }}</label>
             <div class="grid grid-cols-2 gap-4">
                 <input type="radio" name="type" id="type-input-process" value="process" class="hidden" checked>
                 <input type="radio" name="type" id="type-input-docker" value="docker" class="hidden">
@@ -72,14 +72,14 @@
                 <div onclick="selectType('process')" class="relative flex items-center justify-center p-6 bg-gray-50 dark:bg-dark-bg border-2 border-brand-500 rounded-2xl cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-dark-bg/50" id="card-process">
                     <div class="flex flex-col items-center space-y-2 pointer-events-none">
                         <i data-lucide="cpu" class="w-6 h-6 text-brand-500" id="icon-process"></i>
-                        <span class="text-sm font-black text-brand-600 dark:text-brand-400" id="text-process">Host Process</span>
+                        <span class="text-sm font-black text-brand-600 dark:text-brand-400" id="text-process">{{ __('panel.host_process') }}</span>
                     </div>
                 </div>
 
                 <div onclick="selectType('docker')" class="relative flex items-center justify-center p-6 bg-gray-50 dark:bg-dark-bg border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-dark-bg/50" id="card-docker">
                     <div class="flex flex-col items-center space-y-2 pointer-events-none">
                         <i data-lucide="container" class="w-6 h-6 text-gray-400" id="icon-docker"></i>
-                        <span class="text-sm font-black text-gray-500 dark:text-dark-text-muted" id="text-docker">Docker Container</span>
+                        <span class="text-sm font-black text-gray-500 dark:text-dark-text-muted" id="text-docker">{{ __('panel.docker_container') }}</span>
                     </div>
                 </div>
             </div>
@@ -87,14 +87,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Service Name</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.service_name') }}</label>
                 <div class="relative">
                     <i data-lucide="type" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                     <input type="text" name="name" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" required placeholder="Production Web API">
                 </div>
             </div>
             <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Group Tags</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.group_tags') }}</label>
                 <div class="relative">
                     <i data-lucide="tag" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                     <input type="text" name="tags" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" placeholder="Web, Docker, Games">
@@ -106,18 +106,18 @@
         <div id="process-fields" class="space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Working Directory</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.working_directory') }}</label>
                     <div class="relative">
                         <i data-lucide="folder" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                         <input type="text" name="working_dir" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" placeholder="/home/malo/my-app">
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Auto-Installer Script</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.auto_installer_script') }}</label>
                     <div class="relative">
                         <i data-lucide="zap" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                         <select name="installer_script" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium appearance-none">
-                            <option value="">None (Empty Directory)</option>
+                            <option value="">{{ __('panel.none_empty_directory') }}</option>
                             <option value="nodejs">Run 'npm install'</option>
                             <option value="composer">Run 'composer install'</option>
                             <option value="minecraft">Download Minecraft 1.20.1 & Accept EULA</option>
@@ -129,7 +129,7 @@
             </div>
 
             <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Execution Command</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.execution_command') }}</label>
                 <div class="relative">
                     <i data-lucide="play-circle" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                     <input type="text" name="start_command" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" placeholder="npm start">
@@ -141,32 +141,32 @@
         <div id="docker-fields" class="space-y-8 hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Docker Image</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.docker_image') }}</label>
                     <div class="relative">
                         <i data-lucide="container" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                         <input type="text" name="docker_image" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" placeholder="nginx:latest">
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Container Data Path (Inside)</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.container_data_path') }}</label>
                     <div class="relative">
                         <i data-lucide="folder-symlink" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                         <input type="text" name="docker_main_mount" value="/app" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" placeholder="/app">
                     </div>
-                    <p class="text-[10px] text-gray-400 ml-1">Your global Docker path will be automatically linked to this folder.</p>
+                    <p class="text-[10px] text-gray-400 ml-1">{{ __('panel.docker_path_link_info') }}</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Network</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.network') }}</label>
                     <div class="relative">
                         <i data-lucide="network" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                         <input type="text" name="docker_network" value="bridge" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium">
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Ports (e.g., 80:80)</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.ports') }}</label>
                     <div class="relative">
                         <i data-lucide="plug" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                         <input type="text" name="docker_ports" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-medium" placeholder="80:80, 443:443">
@@ -175,7 +175,7 @@
             </div>
 
             <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Override Command (Optional)</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.override_command') }}</label>
                 <div class="relative">
                     <i data-lucide="terminal" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                     <input type="text" name="start_command" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" placeholder="sh startup.sh">
@@ -185,14 +185,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Stop Command (Optional)</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.stop_command') }}</label>
                 <div class="relative">
                     <i data-lucide="square" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                     <input type="text" name="stop_command" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" placeholder="pkill -f 'my-app'">
                 </div>
             </div>
             <div class="space-y-2">
-                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Alert Webhook (Discord)</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.alert_webhook') }}</label>
                 <div class="relative">
                     <i data-lucide="bell" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
                     <input type="url" name="webhook_url" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white text-sm" placeholder="https://discord.com/api/webhooks/...">
@@ -208,8 +208,8 @@
                     <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
                 </div>
                 <div>
-                    <span class="block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Auto-Restart Guard</span>
-                    <span class="block text-xs text-gray-500 dark:text-gray-400">Automatically restart the instance if it terminates unexpectedly.</span>
+                    <span class="block text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ __('panel.auto_restart_guard') }}</span>
+                    <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('panel.auto_restart_desc') }}</span>
                 </div>
             </label>
         </div>
@@ -217,7 +217,7 @@
         <div class="pt-6">
             <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-brand-500/25 active:scale-95 flex items-center justify-center space-x-2">
                 <i data-lucide="rocket" class="w-5 h-5"></i>
-                <span>INITIALIZE & DEPLOY SERVICE</span>
+                <span>{{ __('panel.init_deploy') }}</span>
             </button>
         </div>
     </form>

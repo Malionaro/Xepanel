@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('header_title', 'Schedules')
+@section('header_title', __('panel.schedules'))
 
 @section('content')
 <div class="space-y-10">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">Task Automation</h2>
-            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Synchronize routine maintenance and operational protocols.</p>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight uppercase italic tracking-[0.05em]">{{ __('panel.task_automation') }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.task_automation_desc') }}</p>
         </div>
         <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Back</span>
+            <span>{{ __('panel.back') }}</span>
         </a>
     </div>
 
@@ -29,15 +29,15 @@
         <div class="lg:col-span-2 space-y-6">
             <div class="glass dark:bg-dark-card rounded-[3rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-2xl">
                 <div class="px-10 py-6 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
-                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Active Protocols</h3>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{{ __('panel.active_protocols') }}</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 dark:border-white/5">
-                                <th class="p-8">Automation Task</th>
-                                <th class="p-8">Cron Policy</th>
-                                <th class="p-8 text-right">Registry</th>
+                                <th class="p-8">{{ __('panel.automation_task') }}</th>
+                                <th class="p-8">{{ __('panel.cron_policy') }}</th>
+                                <th class="p-8 text-right">{{ __('panel.registry') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -57,7 +57,7 @@
                                     <td class="p-8">
                                         <div class="flex flex-col space-y-2">
                                             <code class="px-3 py-1 bg-slate-100 dark:bg-white/5 rounded-xl font-mono text-xs text-brand-600 dark:text-brand-400 border border-slate-200 dark:border-white/10 w-fit">{{ $task['cron'] }}</code>
-                                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Next: Analysis pending</p>
+                                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Next: {{ __('panel.analysis_pending') }}</p>
                                         </div>
                                     </td>
                                     <td class="p-8 text-right">
@@ -68,7 +68,7 @@
                                             <form action="{{ route('services.schedules.destroy', ['id' => $service->id, 'taskId' => $task['id']]) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all hover:bg-red-500/10 border border-slate-200 dark:border-white/10" onclick="return confirm('CRITICAL: Terminate automation protocol?')">
+                                                <button type="submit" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all hover:bg-red-500/10 border border-slate-200 dark:border-white/10" onclick="return confirm('{{ __('panel.confirm_delete_task') }}')">
                                                     <i data-lucide="trash-2" class="w-5 h-5"></i>
                                                 </button>
                                             </form>
@@ -84,8 +84,8 @@
                                                 <div class="w-24 h-24 bg-white dark:bg-slate-900 rounded-[2.5rem] flex items-center justify-center text-5xl shadow-2xl border border-slate-100 dark:border-white/5 relative z-10">⏰</div>
                                             </div>
                                             <div class="max-w-xs mx-auto">
-                                                <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Manual Override</p>
-                                                <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">No automation scripts registered. Initialize a new protocol to enable autonomous maintenance.</p>
+                                                <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{{ __('panel.manual_override') }}</p>
+                                                <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">{{ __('panel.no_automation_desc') }}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -108,31 +108,31 @@
                     <div class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 border border-brand-500/20">
                         <i data-lucide="plus-circle" class="w-7 h-7"></i>
                     </div>
-                    <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight">New Protocol</h3>
+                    <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight">{{ __('panel.new_protocol') }}</h3>
                 </div>
                 
                 <div class="space-y-3 relative z-10">
-                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Task Identification</label>
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.task_identification') }}</label>
                     <input type="text" name="name" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm" required placeholder="Protocol Name">
                 </div>
                 
                 <div class="space-y-3 relative z-10">
-                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Cron Frequency</label>
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.cron_frequency') }}</label>
                     <input type="text" name="cron" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm" required placeholder="* * * * *" value="0 0 * * *">
                     <div class="flex items-center space-x-2 ml-1 text-slate-400">
                         <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                        <span class="text-[9px] font-black uppercase tracking-widest">Minute Hour Day Month Week</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest">{{ __('panel.cron_format_desc') }}</span>
                     </div>
                 </div>
 
                 <div class="space-y-3 relative z-10">
-                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Shell Execution</label>
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.shell_execution') }}</label>
                     <input type="text" name="command" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm" required placeholder="command --flag">
                 </div>
                 
                 <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-brand-500/25 active:scale-95 flex items-center justify-center space-x-3 group/submit relative z-10">
                     <i data-lucide="zap" class="w-5 h-5 text-white transition-transform group-hover/submit:scale-125"></i>
-                    <span class="text-xs uppercase tracking-[0.2em]">INITIALISE PROTOCOL</span>
+                    <span class="text-xs uppercase tracking-[0.2em]">{{ __('panel.initialise_protocol') }}</span>
                 </button>
             </form>
         </div>

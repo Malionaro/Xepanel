@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('header_title', 'Create Account')
+@section('header_title', __('panel.create_account'))
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Provision Identity</h2>
-            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Initialize a new system account with specific privilege levels.</p>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.provision_identity') }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.provision_identity_desc') }}</p>
         </div>
         <a href="{{ route('users.index') }}" class="flex items-center space-x-3 glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1 shrink-0 shadow-sm">
             <i data-lucide="arrow-left" class="w-5 h-5"></i>
-            <span>Cancel</span>
+            <span>{{ __('panel.cancel') }}</span>
         </a>
     </div>
 
@@ -22,14 +22,14 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
             <div class="space-y-3">
-                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Full Name</label>
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.full_name') }}</label>
                 <div class="relative">
                     <i data-lucide="user" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                     <input type="text" name="name" value="{{ old('name') }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" required placeholder="John Doe">
                 </div>
             </div>
             <div class="space-y-3">
-                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Email Address</label>
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.email_address') }}</label>
                 <div class="relative">
                     <i data-lucide="mail" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                     <input type="email" name="email" value="{{ old('email') }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" required placeholder="john@example.com">
@@ -39,19 +39,19 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
             <div class="space-y-3">
-                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Secure Password</label>
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.secure_password') }}</label>
                 <div class="relative">
                     <i data-lucide="lock" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                     <input type="password" name="password" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" required minlength="6" placeholder="••••••••">
                 </div>
             </div>
             <div class="space-y-3">
-                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Access Tier</label>
+                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.access_tier') }}</label>
                 <div class="relative">
                     <i data-lucide="shield" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                     <select name="role" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm appearance-none cursor-pointer">
-                        <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>Regular User</option>
-                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrator</option>
+                        <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>{{ __('panel.regular_user') }}</option>
+                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>{{ __('panel.administrator') }}</option>
                     </select>
                     <i data-lucide="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"></i>
                 </div>
@@ -68,7 +68,7 @@
         <div class="pt-6 relative z-10">
             <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-5 rounded-[2rem] transition-all shadow-2xl shadow-brand-500/25 active:scale-95 flex items-center justify-center space-x-3 group/submit">
                 <i data-lucide="zap" class="w-6 h-6 transition-transform group-hover/submit:scale-125"></i>
-                <span class="text-xs uppercase tracking-[0.3em]">INITIALIZE ACCOUNT</span>
+                <span class="text-xs uppercase tracking-[0.3em]">{{ __('panel.initialize_account') }}</span>
             </button>
         </div>
     </form>
@@ -78,7 +78,7 @@
             <i data-lucide="info" class="w-6 h-6"></i>
         </div>
         <p class="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-            New system identities are registered immediately. Automated infrastructure isolation is enforced by default; you must manually assign service permissions to grant access to existing nodes.
+            {{ __('panel.provision_info') }}
         </p>
     </div>
 </div>

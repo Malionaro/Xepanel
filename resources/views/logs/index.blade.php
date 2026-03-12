@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('header_title', 'Activity Logs')
+@section('header_title', __('panel.activity_logs'))
 
 @section('content')
 <div class="space-y-10">
     <div>
-        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Audit Trail</h2>
-        <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Immutable history of all operations and system modifications performed within the control panel.</p>
+        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.audit_trail') }}</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.audit_trail_desc') }}</p>
     </div>
 
     <div class="glass dark:bg-dark-card rounded-[3rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-2xl">
@@ -14,11 +14,11 @@
             <table class="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr class="bg-slate-50/50 dark:bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 dark:border-white/5">
-                        <th class="px-10 py-6">Operation Timestamp</th>
-                        <th class="px-10 py-6">Identity</th>
-                        <th class="px-10 py-6">Protocol Action</th>
-                        <th class="px-10 py-6">Diagnostic Details</th>
-                        <th class="px-10 py-6 text-right">Source Origin</th>
+                        <th class="px-10 py-6">{{ __('panel.operation_timestamp') }}</th>
+                        <th class="px-10 py-6">{{ __('panel.identity') }}</th>
+                        <th class="px-10 py-6">{{ __('panel.protocol_action') }}</th>
+                        <th class="px-10 py-6">{{ __('panel.diagnostic_details') }}</th>
+                        <th class="px-10 py-6 text-right">{{ __('panel.source_origin') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -72,8 +72,8 @@
                                         <div class="w-24 h-24 bg-white dark:bg-slate-900 rounded-[2.5rem] flex items-center justify-center text-5xl shadow-2xl border border-slate-100 dark:border-white/5 relative z-10">📄</div>
                                     </div>
                                     <div class="max-w-xs mx-auto">
-                                        <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">System Slate Clean</p>
-                                        <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">No administrative activities have been logged in the current protocol window.</p>
+                                        <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{{ __('panel.system_slate_clean') }}</p>
+                                        <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">{{ __('panel.no_logs_desc') }}</p>
                                     </div>
                                 </div>
                             </td>

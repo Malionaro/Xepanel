@@ -65,6 +65,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Role Management
+    Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('admin.roles.index');
+    Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('admin.roles.create');
+    Route::post('/roles', [\App\Http\Controllers\RoleController::class, 'store'])->name('admin.roles.store');
+    Route::get('/roles/{id}/edit', [\App\Http\Controllers\RoleController::class, 'edit'])->name('admin.roles.edit');
+    Route::put('/roles/{id}', [\App\Http\Controllers\RoleController::class, 'update'])->name('admin.roles.update');
+    Route::delete('/roles/{id}', [\App\Http\Controllers\RoleController::class, 'destroy'])->name('admin.roles.destroy');
     
     // Services Mass Actions
     Route::post('/services/start-all', [ServiceController::class, 'startAll'])->name('services.start-all');

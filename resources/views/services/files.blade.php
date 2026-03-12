@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('header_title', 'File Manager')
+@section('header_title', __('panel.file_manager'))
 
 @section('content')
 <!-- Include Ace Editor -->
@@ -11,13 +11,13 @@
     <div id="file-manager-view" class="space-y-10 animate-fade-in">
         <div class="flex items-center justify-between gap-4">
             <div class="flex flex-col">
-                <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">{{ __('panel.file_manager') }}</h2>
-                <p class="text-xs font-bold text-slate-500 mt-1">Manage files for {{ $service->name }}</p>
+                <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.file_manager') }}</h2>
+                <p class="text-xs font-bold text-slate-500 mt-1">{{ __('panel.manage_files_for', ['name' => $service->name]) }}</p>
             </div>
             <div class="flex items-center space-x-4">
                 <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1 shadow-sm">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span>Back</span>
+                    <span>{{ __('panel.back') }}</span>
                 </a>
             </div>
         </div>
@@ -25,22 +25,22 @@
         <!-- Action Bar & Mass Operations -->
         <div class="flex flex-wrap items-center justify-between gap-6 glass dark:bg-white/5 p-6 rounded-[2.5rem] border border-slate-200 dark:border-white/5 shadow-xl">
             <div class="flex items-center space-x-4">
-                <button onclick="toggleAllCheckboxes()" class="p-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-brand-500 transition-all border border-slate-200 dark:border-white/10" title="Select All">
+                <button onclick="toggleAllCheckboxes()" class="p-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-brand-500 transition-all border border-slate-200 dark:border-white/10" title="{{ __('panel.select_all') }}">
                     <i data-lucide="check-square" class="w-5 h-5"></i>
                 </button>
                 <div class="h-8 w-px bg-slate-200 dark:bg-white/10 mx-2"></div>
                 <div id="mass-actions" class="flex items-center space-x-3 opacity-50 pointer-events-none transition-all duration-300">
                     <button onclick="confirmMassDelete()" class="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        <span>Delete</span>
+                        <span>{{ __('panel.delete') }}</span>
                     </button>
                     <button onclick="massCompress()" class="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-500/10 text-brand-500 border border-brand-500/20 hover:bg-brand-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest">
                         <i data-lucide="archive" class="w-4 h-4"></i>
-                        <span>Archive</span>
+                        <span>{{ __('panel.archive') }}</span>
                     </button>
                     <button onclick="massExtract()" class="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest">
                         <i data-lucide="archive-restore" class="w-4 h-4"></i>
-                        <span>Extract</span>
+                        <span>{{ __('panel.extract') }}</span>
                     </button>
                 </div>
             </div>
@@ -48,15 +48,15 @@
             <div class="flex items-center space-x-3">
                 <button onclick="document.getElementById('upload-input').click()" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
                     <i data-lucide="upload-cloud" class="w-4 h-4 text-brand-500"></i>
-                    <span>Upload</span>
+                    <span>{{ __('panel.upload') }}</span>
                 </button>
                 <button onclick="showCreateModal('file')" class="flex items-center space-x-3 px-6 py-3 rounded-2xl bg-brand-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-brand-500/25 hover:bg-brand-600 transition-all">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>New File</span>
+                    <span>{{ __('panel.new_file') }}</span>
                 </button>
-                <button onclick="showCreateModal('directory')" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
+                <button onclick="showCreateModal('directory')" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
                     <i data-lucide="folder-plus" class="w-4 h-4"></i>
-                    <span>Folder</span>
+                    <span>{{ __('panel.folder') }}</span>
                 </button>
             </div>
         </div>
@@ -68,8 +68,8 @@
                     <thead>
                         <tr class="bg-slate-50/50 dark:bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 dark:border-white/5">
                             <th class="px-6 py-4 w-12 text-center">#</th>
-                            <th class="px-6 py-4">Metadata Name</th>
-                            <th class="px-6 py-4 text-right">Actions</th>
+                            <th class="px-6 py-4">{{ __('panel.metadata_name') }}</th>
+                            <th class="px-6 py-4 text-right">{{ __('panel.operations') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -101,8 +101,8 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onclick="renameItem('{{ $relativePath ? $relativePath . '/' . $dirName : $dirName }}', '{{ $dirName }}')" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="Rename"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                        <button onclick="deleteItem('{{ $relativePath ? $relativePath . '/' . $dirName : $dirName }}')" class="p-2 text-slate-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/10" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                        <button onclick="renameItem('{{ $relativePath ? $relativePath . '/' . $dirName : $dirName }}', '{{ $dirName }}')" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="{{ __('panel.rename') }}"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                        <button onclick="deleteItem('{{ $relativePath ? $relativePath . '/' . $dirName : $dirName }}')" class="p-2 text-slate-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/10" title="{{ __('panel.delete') }}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -131,9 +131,9 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         @if($isZip)
-                                            <button onclick="extractZip('{{ $relativePath ? $relativePath . '/' . $fileName : $fileName }}')" class="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-all" title="Extract"><i data-lucide="archive-restore" class="w-4 h-4"></i></button>
-                                        @endif                                        <button onclick="renameItem('{{ $relativePath ? $relativePath . '/' . $fileName : $fileName }}', '{{ $fileName }}')" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="Rename"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                        <button onclick="deleteItem('{{ $relativePath ? $relativePath . '/' . $fileName : $fileName }}')" class="p-2 text-slate-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/10" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            <button onclick="extractZip('{{ $relativePath ? $relativePath . '/' . $fileName : $fileName }}')" class="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-all" title="{{ __('panel.extract') }}"><i data-lucide="archive-restore" class="w-4 h-4"></i></button>
+                                        @endif                                        <button onclick="renameItem('{{ $relativePath ? $relativePath . '/' . $fileName : $fileName }}', '{{ $fileName }}')" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="{{ __('panel.rename') }}"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                        <button onclick="deleteItem('{{ $relativePath ? $relativePath . '/' . $fileName : $fileName }}')" class="p-2 text-slate-400 hover:text-red-500 transition-all rounded-lg hover:bg-red-500/10" title="{{ __('panel.delete') }}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -159,21 +159,21 @@
                     <div class="flex items-center space-x-3 mt-1.5">
                         <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center">
                             <i data-lucide="terminal" class="w-3.5 h-3.5 mr-2"></i>
-                            Service: <span class="text-brand-500 ml-1.5">{{ $service->name }}</span>
+                            {{ __('panel.infrastructure') }}: <span class="text-brand-500 ml-1.5">{{ $service->name }}</span>
                         </p>
                         <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest" id="editor-line-count">0 Lines</p>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest" id="editor-line-count">0 {{ __('panel.lines') }}</p>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center space-x-4">
                 <button onclick="closeEditor()" class="px-8 py-3.5 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
-                    {{ __('panel.stop') }}
+                    {{ __('panel.abort') }}
                 </button>
                 <button onclick="saveFile()" class="px-10 py-3.5 rounded-2xl bg-brand-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-brand-500/25 hover:bg-brand-600 transition-all hover:-translate-y-0.5 active:scale-95 flex items-center justify-center space-x-3">
                     <i data-lucide="save" class="w-4 h-4"></i>
-                    <span>{{ __('panel.start') }} Deployment</span>
+                    <span>{{ __('panel.save') }} & {{ __('panel.deployment') }}</span>
                 </button>
             </div>
         </div>
@@ -184,14 +184,14 @@
                 <div class="flex items-center space-x-6">
                     <div class="flex items-center space-x-2 text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
                         <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse glow-green"></span>
-                        <span>Protocol Ready</span>
+                        <span>{{ __('panel.protocol_ready') }}</span>
                     </div>
                 </div>
                 <div class="flex items-center space-x-5">
                     <button onclick="editor.undo()" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="Undo"><i data-lucide="undo-2" class="w-4 h-4"></i></button>
                     <button onclick="editor.redo()" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="Redo"><i data-lucide="redo-2" class="w-4 h-4"></i></button>
                     <div class="w-px h-5 bg-slate-200 dark:bg-white/10 mx-1"></div>
-                    <button onclick="toggleEditorSettings()" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="Settings"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
+                    <button onclick="toggleEditorSettings()" class="p-2 text-slate-400 hover:text-brand-500 transition-all rounded-lg hover:bg-brand-500/10" title="{{ __('panel.settings') }}"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
                 </div>
             </div>
 
@@ -200,7 +200,7 @@
             </div>
             
             <div class="absolute bottom-8 right-12 px-5 py-2.5 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] opacity-0 group-hover/editor:opacity-100 transition-opacity pointer-events-none shadow-2xl">
-                Ctrl + S to Deploy
+                {{ __('panel.ctrl_s_to_deploy') }}
             </div>
         </div>
     </div>
@@ -219,18 +219,18 @@
             <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 border border-brand-500/20">
                 <i id="create-modal-icon" data-lucide="plus-circle" class="w-7 h-7"></i>
             </div>
-            <h3 class="text-2xl font-black text-white tracking-tight" id="create-modal-title">Create</h3>
+            <h3 class="text-2xl font-black text-white tracking-tight" id="create-modal-title">{{ __('panel.create') }}</h3>
         </div>
         <form id="create-form" method="POST" class="space-y-6">
             @csrf
             <input type="hidden" name="path" value="{{ $relativePath }}">
             <div class="space-y-3">
-                <label id="create-modal-label" class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Metadata Name</label>
+                <label id="create-modal-label" class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.metadata_name') }}</label>
                 <input type="text" id="create-modal-input" name="filename" class="w-full bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-3.5 px-5 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-white font-bold text-sm shadow-sm" required>
             </div>
             <div class="flex items-center space-x-4 pt-4">
-                <button type="button" onclick="hideCreateModal()" class="flex-1 py-3.5 rounded-2xl text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest bg-white/5 border border-white/10">Abort</button>
-                <button type="submit" class="flex-1 py-3.5 rounded-2xl bg-brand-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all border border-brand-500/50">Confirm</button>
+                <button type="button" onclick="hideCreateModal()" class="flex-1 py-3.5 rounded-2xl text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest bg-white/5 border border-white/10">{{ __('panel.abort') }}</button>
+                <button type="submit" class="flex-1 py-3.5 rounded-2xl bg-brand-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all border border-brand-500/50">{{ __('panel.confirm') }}</button>
             </div>
         </form>
     </div>
@@ -266,7 +266,7 @@
         // Update line count on change
         editor.session.on('change', () => {
             const lines = editor.session.getLength();
-            document.getElementById('editor-line-count').textContent = lines + ' Lines';
+            document.getElementById('editor-line-count').textContent = lines + ' {{ __('panel.lines') }}';
         });
     });
 
@@ -367,7 +367,7 @@
     }
 
     function confirmMassDelete() {
-        if (!confirm('CRITICAL: Delete all selected items permanently?')) return;
+        if (!confirm('{{ __('panel.confirm_mass_delete') }}')) return;
         
         const checkboxes = document.querySelectorAll('.file-checkbox:checked');
         const files = Array.from(checkboxes).map(c => c.value);
@@ -410,7 +410,7 @@
                 editor.setValue(data.content, -1);
                 
                 const lines = editor.session.getLength();
-                document.getElementById('editor-line-count').textContent = lines + ' Lines';
+                document.getElementById('editor-line-count').textContent = lines + ' {{ __('panel.lines') }}';
                 
                 const ext = data.filename.split('.').pop().toLowerCase();
                 let mode = "ace/mode/text";
@@ -498,12 +498,12 @@
         const form = document.getElementById('create-form');
 
         if (type === 'file') {
-            title.textContent = 'New File';
+            title.textContent = '{{ __('panel.new_file') }}';
             icon.setAttribute('data-lucide', 'file-plus');
             input.name = 'filename';
             form.action = '{{ route('services.files.create', $service->id) }}';
         } else {
-            title.textContent = 'New Folder';
+            title.textContent = '{{ __('panel.new_folder') }}';
             icon.setAttribute('data-lucide', 'folder-plus');
             input.name = 'dirname';
             form.action = '{{ route('services.files.create_dir', $service->id) }}';
@@ -519,7 +519,7 @@
     }
 
     function deleteItem(file) {
-        if (!confirm('Permanently delete this item?')) return;
+        if (!confirm('{{ __('panel.confirm_delete_item') }}')) return;
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '{{ route('services.files.destroy', $service->id) }}';
@@ -547,7 +547,7 @@
     }
 
     function renameItem(file, oldName) {
-        const newName = prompt('Enter new name:', oldName);
+        const newName = prompt('{{ __('panel.enter_new_name') }}', oldName);
         if (!newName || newName === oldName) return;
 
         const form = document.createElement('form');

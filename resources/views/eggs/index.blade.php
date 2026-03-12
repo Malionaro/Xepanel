@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
-@section('header_title', 'Egg Management')
+@section('header_title', __('panel.egg_management'))
 
 @section('content')
 <div class="space-y-10">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Egg-Vorlagen</h2>
-            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Create and manage pre-configured deployment templates for your infrastructure.</p>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.egg_templates') }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.egg_templates_desc') }}</p>
         </div>
         <div class="flex items-center space-x-4 shrink-0">
             <button onclick="document.getElementById('import-file-input').click()" class="flex items-center space-x-3 glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
                 <i data-lucide="upload-cloud" class="w-5 h-5 text-brand-500"></i>
-                <span>Import Protocol</span>
+                <span>{{ __('panel.import_protocol') }}</span>
             </button>
             <form id="import-form" action="{{ route('eggs.import') }}" method="POST" enctype="multipart/form-data" class="hidden">
                 @csrf
@@ -20,7 +20,7 @@
             </form>
             <a href="{{ route('eggs.create') }}" class="flex items-center space-x-3 bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/25 transition-all hover:-translate-y-1 active:scale-95">
                 <i data-lucide="plus" class="w-5 h-5"></i>
-                <span>Initialize Egg</span>
+                <span>{{ __('panel.initialize_egg') }}</span>
             </a>
         </div>
     </div>
@@ -33,7 +33,7 @@
     @endif
 
     @if(session('status'))
-        <div class="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-6 rounded-3xl flex items-center space-x-4 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div class="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-5 rounded-3xl flex items-center space-x-4 animate-in fade-in slide-in-from-top-4 duration-500">
             <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
                 <i data-lucide="check-circle" class="w-6 h-6"></i>
             </div>
@@ -63,7 +63,7 @@
                 </div>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-3 mb-8 relative z-10">
-                    {{ $egg->description ?: 'No operational description available for this deployment template.' }}
+                    {{ $egg->description ?: __('panel.no_egg_desc') }}
                 </p>
 
                 <div class="mt-auto space-y-6 relative z-10">
@@ -93,20 +93,20 @@
                         <div class="flex space-x-2">
                             <form action="{{ route('eggs.clone', $egg->id) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-all hover:bg-emerald-500/10 border border-slate-200 dark:border-white/10" title="Clone Protocol">
+                                <button type="submit" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-all hover:bg-emerald-500/10 border border-slate-200 dark:border-white/10" title="{{ __('panel.clone_protocol') }}">
                                     <i data-lucide="copy" class="w-4 h-4"></i>
                                 </button>
                             </form>
-                            <a href="{{ route('eggs.export', $egg->id) }}" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-indigo-500 transition-all hover:bg-indigo-500/10 border border-slate-200 dark:border-white/10" title="Export JSON">
+                            <a href="{{ route('eggs.export', $egg->id) }}" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-indigo-500 transition-all hover:bg-indigo-500/10 border border-slate-200 dark:border-white/10" title="{{ __('panel.export_json') }}">
                                 <i data-lucide="download" class="w-4 h-4"></i>
                             </a>
                         </div>
                         <div class="flex space-x-2">
                             <a href="{{ route('eggs.edit', $egg->id) }}" class="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-500/10 text-brand-500 border border-brand-500/20 hover:bg-brand-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest">
                                 <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
-                                <span>Modify</span>
+                                <span>{{ __('panel.modify') }}</span>
                             </a>
-                            <form action="{{ route('eggs.destroy', $egg->id) }}" method="POST" onsubmit="return confirm('CRITICAL: Terminate this egg template permanently?')">
+                            <form action="{{ route('eggs.destroy', $egg->id) }}" method="POST" onsubmit="return confirm('{{ __('panel.confirm_delete_egg') }}')">
                                 @csrf
                                 @method('DELETE')
                                 <button class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all hover:bg-red-500/10 border border-slate-200 dark:border-white/10">

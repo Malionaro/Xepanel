@@ -54,8 +54,8 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         .glass {
             background: rgba(255, 255, 255, 0.7);
@@ -107,7 +107,7 @@
                         <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
                             <div class="flex items-center space-x-3">
                                 <i data-lucide="user-cog" class="w-5 h-5"></i>
-                                <span class="text-sm font-bold">Profile Settings</span>
+                                <span class="text-sm font-bold">{{ __('panel.profile_settings') }}</span>
                             </div>
                             <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
                         </button>
@@ -120,19 +120,19 @@
 
                             <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.api-keys') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="key" class="w-4 h-4"></i>
-                                <span>API Schlüssel</span>
+                                <span>{{ __('panel.api_keys') }}</span>
                             </a>
                         </div>
                     </div>
 
                     @if(auth()->user()?->role === 'admin')
-                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
+                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
                         
                         <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
                             <div class="flex items-center space-x-3">
                                 <i data-lucide="shield-check" class="w-5 h-5"></i>
-                                <span class="text-sm font-bold">Administrator</span>
+                                <span class="text-sm font-bold">{{ __('panel.administrator') }}</span>
                             </div>
                             <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
                         </button>
@@ -140,27 +140,31 @@
                         <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
                             <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('dashboard') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                                <span>Global Analytics</span>
+                                <span>{{ __('panel.global_analytics') }}</span>
                             </a>
                             <a href="{{ route('users.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('users.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="users" class="w-4 h-4"></i>
                                 <span>{{ __('panel.user_management') }}</span>
                             </a>
+                            <a href="{{ route('admin.roles.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('admin.roles.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                <span>{{ __('panel.roles_permissions') }}</span>
+                            </a>
                             <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('eggs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="egg" class="w-4 h-4"></i>
-                                <span>Egg-Vorlagen</span>
+                                <span>{{ __('panel.egg_templates') }}</span>
                             </a>
                             <a href="{{ route('network.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('network.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="globe" class="w-4 h-4"></i>
-                                <span>Netzwerk</span>
+                                <span>{{ __('panel.network') }}</span>
                             </a>
                             <a href="{{ route('logs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('logs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="scroll-text" class="w-4 h-4"></i>
-                                <span>Audit Trail</span>
+                                <span>{{ __('panel.audit_trail') }}</span>
                             </a>
                             <a href="{{ route('settings.security') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.security') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="shield-alert" class="w-4 h-4"></i>
-                                <span>Security & Sessions</span>
+                                <span>{{ __('panel.security_sessions') }}</span>
                             </a>
                             <a href="{{ route('settings.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.index') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="settings" class="w-4 h-4"></i>
@@ -178,7 +182,7 @@
                         <i data-lucide="user" class="w-5 h-5"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()?->name ?? 'Gast' }}</p>
+                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()?->name ?? __('panel.guest') }}</p>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()?->role ?? 'N/A' }}</p>
                     </div>
                 </div>
@@ -203,7 +207,7 @@
                     </button>
                     @endif
                     
-                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group">
+                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group {{ $showSidebar ? 'lg:hidden' : '' }}">
                         <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-110 transition-transform">
                             <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
                         </div>
@@ -214,7 +218,7 @@
                 <div class="flex items-center space-x-4">
                     @if(auth()->user()?->role === 'admin')
                     <a href="{{ route('dashboard') }}" class="px-6 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-white transition-all shadow-sm">
-                        ADMINISTRATION
+                        {{ __('panel.administration') }}
                     </a>
                     @endif
 
@@ -251,7 +255,7 @@
                 <nav class="space-y-4">
                     <a href="{{ route('services.index') }}" class="flex items-center space-x-3 px-5 py-3 rounded-xl transition-all text-slate-500">
                         <i data-lucide="server" class="w-5 h-5"></i>
-                        <span class="text-sm font-bold">My Services</span>
+                        <span class="text-sm font-bold">{{ __('panel.my_services') }}</span>
                     </a>
                 </nav>
             </div>

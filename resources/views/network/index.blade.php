@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
-@section('header_title', 'Network Monitor')
+@section('header_title', __('panel.network_monitor'))
 
 @section('content')
 <div class="space-y-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Netzwerk</h2>
-            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Real-time monitoring of all active listeners and communication ports on this node.</p>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.network_ports') }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.network_monitor_desc') }}</p>
         </div>
         <div class="flex items-center space-x-3 shrink-0">
             <div class="flex items-center space-x-3 bg-brand-500/10 border border-brand-500/20 px-6 py-3 rounded-2xl shadow-sm">
                 <span class="flex h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse glow-green"></span>
-                <span class="text-[10px] font-black uppercase text-brand-500 tracking-[0.2em]">Protocol Live</span>
+                <span class="text-[10px] font-black uppercase text-brand-500 tracking-[0.2em]">{{ __('panel.protocol_live') }}</span>
             </div>
         </div>
     </div>
@@ -22,11 +22,11 @@
             <table class="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                     <tr class="bg-slate-50/50 dark:bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 dark:border-white/5">
-                        <th class="px-10 py-6">Protocol Type</th>
-                        <th class="px-10 py-6">Port Assignment</th>
-                        <th class="px-10 py-6">Local Interface</th>
-                        <th class="px-10 py-6">Identity (PID)</th>
-                        <th class="px-10 py-6 text-right">Infrastructure Link</th>
+                        <th class="px-10 py-6">{{ __('panel.protocol_type') }}</th>
+                        <th class="px-10 py-6">{{ __('panel.port_assignment') }}</th>
+                        <th class="px-10 py-6">{{ __('panel.local_interface') }}</th>
+                        <th class="px-10 py-6">{{ __('panel.identity_pid') }}</th>
+                        <th class="px-10 py-6 text-right">{{ __('panel.infrastructure_link') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -60,7 +60,7 @@
                                 @else
                                     <div class="inline-flex items-center space-x-2 text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] italic opacity-60">
                                         <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                                        <span>System Protocol</span>
+                                        <span>{{ __('panel.system_protocol') }}</span>
                                     </div>
                                 @endif
                             </td>
@@ -74,8 +74,8 @@
                                         <div class="w-24 h-24 bg-white dark:bg-slate-900 rounded-[2.5rem] flex items-center justify-center text-5xl shadow-2xl border border-slate-100 dark:border-white/5 relative z-10">🌐</div>
                                     </div>
                                     <div class="max-w-xs mx-auto">
-                                        <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">No Listeners Detected</p>
-                                        <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">External communication channels are currently isolated or inactive.</p>
+                                        <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{{ __('panel.no_listeners_detected') }}</p>
+                                        <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">{{ __('panel.no_listeners_desc') }}</p>
                                     </div>
                                 </div>
                             </td>

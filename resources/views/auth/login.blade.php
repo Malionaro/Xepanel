@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('header_title', 'Authentication')
+@section('header_title', __('panel.authentication'))
 
 @section('content')
 <div class="min-h-[80vh] flex flex-col items-center justify-center relative overflow-hidden">
@@ -20,7 +20,7 @@
                 \App\Models\Setting::get('panel_name', 'Xepanel') }}</h1>
             <p
                 class="text-slate-500 dark:text-slate-400 mt-3 font-bold uppercase text-[10px] tracking-[0.3em] opacity-60">
-                Infrastructure Access Protocol</p>
+                {{ __('panel.access_protocol') }}</p>
         </div>
 
         <!-- Login Card -->
@@ -41,8 +41,7 @@
                     <!-- Email Field -->
                     <div class="group">
                         <label
-                            class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1 group-focus-within:text-brand-500 transition-colors">Credential
-                            Identity</label>
+                            class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1 group-focus-within:text-brand-500 transition-colors">{{ __('panel.credential_identity') }}</label>
                         <div class="relative">
                             <i data-lucide="mail"
                                 class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
@@ -55,8 +54,7 @@
                     <!-- Password Field -->
                     <div class="group">
                         <label
-                            class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1 group-focus-within:text-brand-500 transition-colors">Access
-                            Cipher</label>
+                            class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1 group-focus-within:text-brand-500 transition-colors">{{ __('panel.access_cipher') }}</label>
                         <div class="relative">
                             <i data-lucide="lock"
                                 class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
@@ -79,15 +77,15 @@
                             </div>
                         </div>
                         <span
-                            class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Persistence</span>
+                            class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">{{ __('panel.persistence') }}</span>
                     </label>
                     <a href="#"
-                        class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-500 transition-colors">Recovery?</a>
+                        class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-500 transition-colors">{{ __('panel.recovery') }}</a>
                 </div>
 
                 <button type="submit"
                     class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-brand-500/25 active:scale-[0.98] group/btn flex items-center justify-center space-x-3">
-                    <span class="text-xs uppercase tracking-[0.3em]">Initialise Session</span>
+                    <span class="text-xs uppercase tracking-[0.3em]">{{ __('panel.initialise_session') }}</span>
                     <i data-lucide="arrow-right" class="w-5 h-5 transition-transform group-hover/btn:translate-x-1"></i>
                 </button>
             </form>
@@ -95,7 +93,7 @@
 
         <!-- Footer Info -->
         <p class="text-center mt-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 opacity-40">
-            Secure Node &copy; {{ date('Y') }} Protocol Version 2.0
+            {{ __('panel.secure_node') }} &copy; {{ date('Y') }} {{ __('panel.protocol_version') }} 2.0
         </p>
     </div>
 </div>

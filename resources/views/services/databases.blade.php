@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('header_title', 'Database Management')
+@section('header_title', __('panel.database_management'))
 
 @section('content')
 <div class="space-y-10">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">Persistence Layer</h2>
-            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Provision and manage relational data environments for your services.</p>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight uppercase italic tracking-[0.05em]">{{ __('panel.persistence_layer') }}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.persistence_layer_desc') }}</p>
         </div>
         <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Back</span>
+            <span>{{ __('panel.back') }}</span>
         </a>
     </div>
 
@@ -56,7 +56,7 @@
                         <form action="{{ route('services.databases.destroy', ['id' => $service->id, 'dbId' => $db['id']]) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all hover:bg-red-500/10 border border-slate-200 dark:border-white/10" onclick="return confirm('CRITICAL: Permanently drop database and user?')">
+                            <button type="submit" class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all hover:bg-red-500/10 border border-slate-200 dark:border-white/10" onclick="return confirm('{{ __('panel.confirm_delete_db') }}')">
                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
                         </form>
@@ -64,14 +64,14 @@
 
                     <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
                         <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 space-y-1">
-                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Username</span>
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest block">{{ __('panel.username') }}</span>
                             <div class="flex items-center justify-between">
                                 <code class="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">{{ $db['db_user'] }}</code>
                                 <button onclick="navigator.clipboard.writeText('{{ $db['db_user'] }}')" class="text-slate-400 hover:text-brand-500 transition-colors"><i data-lucide="copy" class="w-3 h-3"></i></button>
                             </div>
                         </div>
                         <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 space-y-1">
-                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest block">Password</span>
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest block">{{ __('panel.password') }}</span>
                             <div class="flex items-center justify-between">
                                 <input type="password" value="{{ $db['db_pass'] }}" class="bg-transparent border-none outline-none text-xs font-mono font-bold text-slate-700 dark:text-slate-300 w-full" readonly>
                                 <button onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password';" class="text-slate-400 hover:text-brand-500 transition-colors mx-2"><i data-lucide="eye" class="w-3 h-3"></i></button>
@@ -79,10 +79,10 @@
                             </div>
                         </div>
                         <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 space-y-1">
-                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest block">External Access</span>
+                            <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest block">{{ __('panel.external_access') }}</span>
                             <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter flex items-center">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-                                Fully Routed
+                                {{ __('panel.fully_routed') }}
                             </span>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                     <div class="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-slate-300">
                         <i data-lucide="database-zap" class="w-10 h-10"></i>
                     </div>
-                    <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px]">No databases provisioned</p>
+                    <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px]">{{ __('panel.no_db_provisioned') }}</p>
                 </div>
             @endforelse
         </div>
@@ -107,31 +107,31 @@
                     <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
                         <i data-lucide="plus-circle" class="w-7 h-7"></i>
                     </div>
-                    <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight">New Database</h3>
+                    <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight">{{ __('panel.new_database') }}</h3>
                 </div>
                 
                 <div class="space-y-3 relative z-10">
-                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Database Name</label>
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.database_name') }}</label>
                     <div class="relative">
                         <div class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-xs font-bold">s{{ $service->id }}_</div>
                         <input type="text" name="database_name" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-24 pr-6 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm" required placeholder="main_db">
                     </div>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest ml-1 leading-relaxed">System will auto-prefix identifiers for isolation.</p>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest ml-1 leading-relaxed">{{ __('panel.db_prefix_info') }}</p>
                 </div>
                 
                 <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-5 rounded-[1.5rem] transition-all shadow-xl shadow-emerald-500/25 active:scale-95 flex items-center justify-center space-x-3 group/submit relative z-10">
                     <i data-lucide="database" class="w-5 h-5 text-white transition-transform group-hover/submit:rotate-12"></i>
-                    <span class="text-xs uppercase tracking-[0.2em]">PROVISION DATABASE</span>
+                    <span class="text-xs uppercase tracking-[0.2em]">{{ __('panel.provision_database') }}</span>
                 </button>
             </form>
 
             <div class="mt-8 p-8 glass dark:bg-dark-card border border-slate-200 dark:border-white/5 rounded-[2rem] shadow-lg">
                 <h4 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 flex items-center">
                     <i data-lucide="info" class="w-3.5 h-3.5 mr-2"></i>
-                    Management Protocol
+                    {{ __('panel.management_protocol') }}
                 </h4>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                    All provisioned databases are accessible from the node network. Ensure your application uses the correct host address provided in the metadata.
+                    {{ __('panel.db_access_info') }}
                 </p>
             </div>
         </div>
