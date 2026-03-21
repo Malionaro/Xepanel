@@ -40,7 +40,7 @@ class MonitorServices extends Command
                 $lastLogLines = "Log data not available.";
                 if ($service->type === 'docker') {
                     $containerName = escapeshellarg($service->docker_container_name);
-                    $lastLogLines = shell_exec("docker logs --tail 50 {$containerName} 2>&1");
+                    $lastLogLines = shell_exec("timeout 5 docker logs --tail 50 {$containerName} 2>&1");
                 } else {
                     $logPath = storage_path("logs/services/{$service->id}.log");
                     if (file_exists($logPath)) {
@@ -107,7 +107,7 @@ class MonitorServices extends Command
                             
                             if ($service->type === 'docker') {
                                 $containerName = escapeshellarg($service->docker_container_name);
-                                $cmd = "docker exec -d {$containerName} " . $task['command'];
+                                $cmd = "timeout 5 docker exec -d {$containerName} " . $task['command'];
                             } else {
                                 $cmd = "cd " . escapeshellarg($service->working_dir) . " && " . $task['command'];
                                 $cmd = "nohup {$cmd} > /dev/null 2>&1 &";
@@ -163,7 +163,7 @@ class MonitorServices extends Command
 
         if ($service->type === 'docker') {
             $containerName = escapeshellarg($service->docker_container_name);
-            $output = shell_exec("docker stats --no-stream --format '{{.CPUPerc}},{{.MemUsage}}' {$containerName} 2>/dev/null");
+            $output = shell_exec("timeout 5 docker stats --no-stream --format '{{.CPUPerc}},{{.MemUsage}}' {$containerName} 2>/dev/null");
             if ($output) {
                 $parts = explode(',', trim($output));
                 $cpu = (float)str_replace('%', '', $parts[0] ?? '0');

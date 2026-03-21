@@ -63,7 +63,7 @@ class MetricsController extends Controller
 
         if ($service->type === 'docker') {
             $containerName = escapeshellarg($service->docker_container_name);
-            $output = shell_exec("docker stats --no-stream --format '{{.CPUPerc}},{{.MemUsage}}' {$containerName} 2>/dev/null");
+            $output = shell_exec("timeout 5 docker stats --no-stream --format '{{.CPUPerc}},{{.MemUsage}}' {$containerName} 2>/dev/null");
             
             if ($output) {
                 $parts = explode(',', trim($output));

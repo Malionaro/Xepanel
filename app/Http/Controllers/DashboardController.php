@@ -49,7 +49,7 @@ class DashboardController extends Controller
         $dockerServices = $running->filter(fn($s) => $s->type === 'docker');
         if ($dockerServices->isNotEmpty()) {
             $names = $dockerServices->map(fn($s) => escapeshellarg($s->docker_container_name))->implode(' ');
-            $output = shell_exec("docker stats --no-stream --format '{{.Name}},{{.CPUPerc}},{{.MemUsage}}' {$names} 2>/dev/null");
+            $output = shell_exec("timeout 5 docker stats --no-stream --format '{{.Name}},{{.CPUPerc}},{{.MemUsage}}' {$names} 2>/dev/null");
             
             if ($output) {
                 $lines = explode("\n", trim($output));

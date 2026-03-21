@@ -53,9 +53,9 @@
 
         <!-- Branding & UI Customization -->
         <div class="glass dark:bg-dark-card border border-slate-200 dark:border-white/5 p-10 md:p-12 rounded-[3.5rem] shadow-2xl space-y-12 relative overflow-hidden group">
-            <div class="absolute -right-24 -top-24 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl group-hover:bg-brand-500/10 transition-colors duration-700"></div>
+            <div class="absolute -right-24 -top-24 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl group-hover:bg-brand-500/10 transition-colors duration-700 pointer-events-none"></div>
             
-            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-400 flex items-center relative z-10">
+            <h3 class="!mt-0 text-xs font-black uppercase tracking-[0.3em] text-slate-400 flex items-center relative z-10">
                 <i data-lucide="palette" class="w-4 h-4 mr-3 text-brand-500"></i>
                 {{ __('panel.visual_identity') }}
             </h3>

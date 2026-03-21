@@ -252,12 +252,105 @@
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
-                <nav class="space-y-4">
-                    <a href="{{ route('services.index') }}" class="flex items-center space-x-3 px-5 py-3 rounded-xl transition-all text-slate-500">
+                <nav class="space-y-2">
+                    <a href="{{ route('services.index') }}" class="flex items-center space-x-3 px-5 py-3 rounded-xl transition-all {{ request()->routeIs('services.*') ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5' }}">
                         <i data-lucide="server" class="w-5 h-5"></i>
                         <span class="text-sm font-bold">{{ __('panel.my_services') }}</span>
                     </a>
+                    
+                    <div class="pt-2" x-data="{ open: {{ (request()->routeIs('user.*')) ? 'true' : 'false' }} }">
+                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4 mt-2">{{ __('panel.my_account') }}</p>
+                        
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="user-cog" class="w-5 h-5"></i>
+                                <span class="text-sm font-bold">{{ __('panel.profile_settings') }}</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
+                            <a href="{{ route('user.two-factor') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.two-factor') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                <span>{{ __('panel.security_2fa') }}</span>
+                            </a>
+
+                            <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.api-keys') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                                <span>{{ __('panel.api_keys') }}</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    @if(auth()->user()?->role === 'admin')
+                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
+                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
+                        
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                <span class="text-sm font-bold">{{ __('panel.administrator') }}</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
+                            <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('dashboard') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                                <span>{{ __('panel.global_analytics') }}</span>
+                            </a>
+                            <a href="{{ route('users.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('users.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                <span>{{ __('panel.user_management') }}</span>
+                            </a>
+                            <a href="{{ route('admin.roles.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('admin.roles.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                <span>{{ __('panel.roles_permissions') }}</span>
+                            </a>
+                            <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('eggs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="egg" class="w-4 h-4"></i>
+                                <span>{{ __('panel.egg_templates') }}</span>
+                            </a>
+                            <a href="{{ route('network.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('network.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="globe" class="w-4 h-4"></i>
+                                <span>{{ __('panel.network') }}</span>
+                            </a>
+                            <a href="{{ route('logs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('logs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="scroll-text" class="w-4 h-4"></i>
+                                <span>{{ __('panel.audit_trail') }}</span>
+                            </a>
+                            <a href="{{ route('settings.security') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.security') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                                <span>{{ __('panel.security_sessions') }}</span>
+                            </a>
+                            <a href="{{ route('settings.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.index') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+                                <i data-lucide="settings" class="w-4 h-4"></i>
+                                <span>{{ __('panel.panel_settings') }}</span>
+                            </a>
+                        </div>
+                    </div>
+                    @endif
                 </nav>
+            </div>
+            
+            <div class="mt-auto p-8 border-t border-slate-100 dark:border-slate-800/50">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()?->name ?? __('panel.guest') }}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()?->role ?? 'N/A' }}</p>
+                    </div>
+                </div>
+                
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button class="w-full flex items-center space-x-3 px-5 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all duration-300 group">
+                        <i data-lucide="log-out" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.sign_out') }}</span>
+                    </button>
+                </form>
             </div>
         </aside>
     </div>

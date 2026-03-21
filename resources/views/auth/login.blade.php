@@ -3,7 +3,7 @@
 @section('header_title', __('panel.authentication'))
 
 @section('content')
-<div class="min-h-[80vh] flex flex-col items-center justify-center relative overflow-hidden">
+<div class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
     <!-- Background Accents specific for Login -->
     <div
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/10 blur-[120px] rounded-full pointer-events-none">
