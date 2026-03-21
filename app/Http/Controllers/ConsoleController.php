@@ -68,9 +68,11 @@ class ConsoleController extends Controller
 
             $res = $service->dockerApi('GET', '/v1.41/containers/' . urlencode($containerName) . '/logs?stdout=1&stderr=1&tail=' . $lines, [], 5);
             
-            if ($res && $res['status'] === 200) {
-                // Docker logs might contain invalid UTF-8 sequences (e.g., from Java process console)
-                // which causes response()->json() to throw a 500 Malformed UTF-8 error.
+            if (!$res) {
+                \Illuminate\Support\Facades\Log::error("Docker API getLogs: null response (timeout) for {$containerName}");
+            } elseif ($res['status'] !== 200) {
+                \Illuminate\Support\Facades\Log::error("Docker API getLogs: status {$res['status']} for {$containerName}");
+            } else {
                 $rawLogs = $this->demultiplexDockerLogs($res['body']);
                 $dockerLogs = mb_convert_encoding($rawLogs, 'UTF-8', 'UTF-8');
             }
@@ -119,8 +121,17 @@ class ConsoleController extends Controller
                 $req .= "Upgrade: tcp\r\n\r\n";
                 
                 fwrite($fp, $req);
-                // Give it a tiny fraction of a second to upgrade the protocol before blasting the command
                 usleep(50000); 
+                
+                // Discard the HTTP headers before writing the command
+                $head = '';
+                stream_set_timeout($fp, 1);
+                while (!feof($fp)) {
+                    $char = fgetc($fp);
+                    $head .= $char;
+                    if (str_ends_with($head, "\r\n\r\n")) break;
+                }
+                
                 fwrite($fp, $command . "\n");
                 fclose($fp);
             }

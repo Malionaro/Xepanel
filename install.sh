@@ -1,194 +1,102 @@
 #!/bin/bash
+# install.sh - Automated installer for the FilePanel project
 
-# --- FilePanel Ultra-Setup Script (Linux) ---
-echo "🌟 Starting FULL FilePanel Installation..."
+set -e
 
-# 1. Root Check
-if [ "$EUID" -ne 0 ]; then 
-  echo "❌ Error: Please run with sudo (sudo bash install.sh)"
+# Ensure script is run as root
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run this script as root (sudo ./install.sh)"
   exit 1
 fi
 
-# Directory Check - Ensure we are in the panel directory
-if [ ! -f "artisan" ]; then
-    echo "❌ Error: 'artisan' file not found!"
-    echo "   Please make sure you are in the FilePanel project folder."
-    echo "   Use 'cd /path/to/panel' before running this script."
+echo "--- Starting Automated Installation ---"
+
+# Step 1: Update System Packages
+echo "[1/6] Updating system packages..."
+apt-get update -y
+apt-get upgrade -y
+
+# Step 2: Install Base Dependencies and PHP 8.2
+echo "[2/6] Installing PHP, Curl, Git, and other dependencies..."
+apt-get install -y software-properties-common curl git wget unzip acl
+
+# Add Ondrej PHP repository for latest PHP versions
+add-apt-repository -y ppa:ondrej/php
+apt-get update -y
+
+apt-get install -y php8.2 php8.2-cli php8.2-common php8.2-fpm php8.2-mysql php8.2-zip \
+  php8.2-gd php8.2-mbstring php8.2-curl php8.2-xml php8.2-bcmath php8.2-sqlite3
+
+# Step 3: Install Composer
+echo "[3/6] Installing Composer..."
+EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+
+if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then
+    >&2 echo 'ERROR: Invalid composer installer checksum'
+    rm composer-setup.php
     exit 1
 fi
 
-# Determine the actual user who ran sudo
-if [ -n "$SUDO_USER" ]; then
-    REAL_USER="$SUDO_USER"
-else
-    REAL_USER=$(logname 2>/dev/null || echo "$USER")
-fi
-if [ -z "$REAL_USER" ] || [ "$REAL_USER" = "root" ]; then
-    REAL_USER="root"
-fi
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+rm composer-setup.php
 
-echo "👤 Installing for user: $REAL_USER"
+# Step 4: Install Node.js & NPM
+echo "[4/6] Installing Node.js..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt-get install -y nodejs
 
-# 2. System Update & Dependencies
-echo "📦 Installing system dependencies..."
-if [ -f /etc/arch-release ]; then
-    echo "Distro: Arch Linux"
-    pacman -Syu --noconfirm
-    pacman -S --noconfirm php php-sqlite php-gd php-intl php-curl php-mbstring php-xml composer nodejs npm unzip git curl
-elif [ -f /etc/debian_version ] || grep -q -i ubuntu /etc/os-release; then
-    echo "Distro: Debian/Ubuntu"
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update -y
-    apt-get install -y software-properties-common curl ca-certificates gnupg unzip git
-
-    # Add NodeSource repo for Node.js 20
-    mkdir -p /etc/apt/keyrings
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg --yes
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-
-    # Add Ondrej PPA for PHP (if available)
-    if command -v add-apt-repository >/dev/null 2>&1; then
-        add-apt-repository -y ppa:ondrej/php || true
-    fi
-
-    apt-get update -y
-    # Install PHP 8.2 and dependencies (without docker.io to prevent containerd conflicts)
-    apt-get install -y php8.2 php8.2-cli php8.2-common php8.2-sqlite3 php8.2-gd php8.2-intl php8.2-curl php8.2-mbstring php8.2-xml php8.2-bcmath php8.2-zip nodejs
-    
-    # Force default PHP CLI to the version we just installed
-    if command -v update-alternatives >/dev/null 2>&1; then
-        update-alternatives --set php /usr/bin/php8.2 || true
-    fi
-else
-    echo "⚠️ Unknown OS. Trying to install basic packages..."
-    apt-get install -y php nodejs npm unzip git || yum install -y php nodejs npm unzip git
-fi
-
-# Fallback for Composer
-if ! command -v composer >/dev/null 2>&1; then
-    echo "📦 Installing Composer..."
-    curl -sS https://getcomposer.org/installer | php
-    mv composer.phar /usr/local/bin/composer
-fi
-
-# 3. Docker setup
-echo "🐳 Setting up Docker..."
-if ! command -v docker >/dev/null 2>&1; then
-    echo "   Installing Docker via official script..."
+# Step 5: Install Docker
+echo "[5/6] Installing Docker..."
+if ! command -v docker &> /dev/null; then
     curl -fsSL https://get.docker.com -o get-docker.sh
     sh get-docker.sh
     rm get-docker.sh
+else
+    echo "Docker is already installed."
 fi
 
-systemctl start docker || true
-systemctl enable docker || true
-chmod 666 /var/run/docker.sock 2>/dev/null || true
-if [ "$REAL_USER" != "root" ]; then
-    usermod -aG docker "$REAL_USER" || true
-fi
+# Add the actual user (not root) to the docker group
+REAL_USER=${SUDO_USER:-$(whoami)}
+usermod -aG docker "$REAL_USER"
+echo "Added user $REAL_USER to docker group. You may need to log out and log back in."
 
-# Check if essential commands are available before continuing
-for cmd in php composer npm; do
-    if ! command -v $cmd >/dev/null 2>&1; then
-        echo "❌ Error: $cmd could not be installed. Please check your system's package manager."
-        exit 1
-    fi
-done
+# Step 6: Setup Laravel Panel
+echo "[6/6] Setting up project..."
 
-# 4. Webserver Prep
-echo "⚙️ Initializing Panel Environment..."
+# Change ownership to the real user so composer doesn't complain
+chown -R "$REAL_USER":"$REAL_USER" .
+
+# Install PHP dependencies
+sudo -u "$REAL_USER" composer install --no-dev --optimize-autoloader || composer install --no-dev --optimize-autoloader
+
+# Set up environment file
 if [ ! -f .env ]; then
-    if [ -f .env.example ]; then
-        cp .env.example .env
-    else
-        echo "⚠️ .env.example not found. An empty .env will be created."
-        touch .env
-    fi
+    sudo -u "$REAL_USER" cp .env.example .env
 fi
 
-mkdir -p storage/app/private/services storage/app/private/eggs storage/app/private/docker
-mkdir -p storage/framework/{sessions,views,cache}
-mkdir -p bootstrap/cache
-mkdir -p database
-
-touch database/database.sqlite
-
-# 5. Composer & Laravel
-echo "📦 Installing PHP Dependencies (Composer)..."
-export COMPOSER_ALLOW_SUPERUSER=1
-composer install --no-interaction --optimize-autoloader --ignore-platform-reqs
-
-echo "🔑 Generating Application Key..."
-php artisan key:generate --force
-
-echo "🗄️ Running Migrations..."
-php artisan migrate --force
-
-echo "🥚 Seeding default eggs..."
-php artisan tinker --execute="\App\Models\Egg::seedDefaults();"
-
-# 6. Frontend
-echo "🎨 Installing Node Dependencies & Building Frontend..."
-npm install
-npm run build
-
-# 7. Permissions
-echo "🔒 Setting up correct file permissions..."
-# Give ownership back to the real user so they can edit files easily
-chown -R "$REAL_USER:$REAL_USER" .
-
-# Ensure Laravel's writable directories are accessible by the webserver and CLI
-chmod -R 777 storage bootstrap/cache database
-chmod 666 database/database.sqlite
-if [ -f storage/app/users.json ]; then
-    chmod 666 storage/app/users.json
+# Set up SQLite database default
+if [ ! -f database/database.sqlite ]; then
+    sudo -u "$REAL_USER" touch database/database.sqlite
 fi
 
-# 8. Create Admin User
-echo ""
-echo "-------------------------------------------------------"
-read -p "❓ Do you want to create an Admin User now? (y/n): " create_user
-if [[ "$create_user" =~ ^[Yy]$ ]]; then
-    read -p "   Enter Email: " admin_email
-    read -p "   Enter Name: " admin_name
-    read -p "   Enter Password: " admin_pass
-    
-    cat << 'EOF' > create_admin.php
-<?php
-require 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+# Generate app key, run migrations
+sudo -u "$REAL_USER" php artisan key:generate --force
+sudo -u "$REAL_USER" php artisan migrate --force
 
-$email = $argv[1];
-$name = $argv[2];
-$pass = $argv[3];
+# Install Node dependencies and build frontend assets
+sudo -u "$REAL_USER" npm install
+sudo -u "$REAL_USER" npm run build
 
-$u = new \App\Models\FileUser();
-$u->id = uniqid();
-$u->email = $email;
-$u->name = $name;
-$u->password = \Illuminate\Support\Facades\Hash::make($pass);
-$u->role = 'admin';
-$u->save();
-EOF
+# Fix permissions
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
+setfacl -R -m u:www-data:rwx -m u:"$REAL_USER":rwx storage bootstrap/cache
+setfacl -dR -m u:www-data:rwx -m u:"$REAL_USER":rwx storage bootstrap/cache
 
-    # Run the PHP script with arguments to safely handle spaces and special chars
-    if [ "$REAL_USER" != "root" ]; then
-        sudo -u "$REAL_USER" php create_admin.php "$admin_email" "$admin_name" "$admin_pass"
-    else
-        php create_admin.php "$admin_email" "$admin_name" "$admin_pass"
-    fi
-    
-    rm create_admin.php
-    echo "✅ Admin user created successfully!"
-fi
-
-echo ""
-echo "🎉 EVERYTHING INSTALLED!"
-echo "-------------------------------------------------------"
-echo "Start the panel manually for development:"
-echo "   php artisan serve"
-echo "URL: http://127.0.0.1:8000"
-echo ""
-echo "Note: If running behind a webserver (Nginx/Apache), point the document root to the 'public' folder."
-echo "-------------------------------------------------------"
+echo "--- Installation Complete! ---"
+echo "You can now serve your application using:"
+echo "php artisan serve"
+echo "Or configure your web server (Nginx/Apache) to serve the public/ directory."
+echo "Note: To run docker-related services, you may need to 'su - $REAL_USER' or reboot for docker group changes to apply."

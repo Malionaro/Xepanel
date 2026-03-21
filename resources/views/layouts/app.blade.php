@@ -4,9 +4,19 @@
     $panelIcon = \App\Models\Setting::get('panel_icon', 'layers');
     $panelName = \App\Models\Setting::get('panel_name', 'FilePanel');
 
-    // Sidebar Visibility: Hidden for infrastructure (services) related pages to provide immersive full-width view
-    $showSidebar = !request()->routeIs('services.*') && !request()->routeIs('api.docs');
-    
+    // Layout Logic
+    $isAdminPage = request()->routeIs('dashboard') || 
+                   request()->routeIs('users.*') || 
+                   request()->routeIs('admin.roles.*') || 
+                   request()->routeIs('eggs.*') || 
+                   request()->routeIs('network.*') || 
+                   request()->routeIs('logs.*') || 
+                   request()->routeIs('settings.*');
+                   
+    $isMinimalPage = request()->routeIs('services.*') || 
+                     request()->routeIs('user.*') || 
+                     request()->routeIs('api.docs');
+
     // Get dynamic version from Git
     $gitHash = @shell_exec('git rev-parse --short HEAD');
     $appVersion = $gitHash ? 'BUILD-' . trim($gitHash) : '1.0.0-BETA1';
@@ -90,7 +100,7 @@
     </div>
 
     <div class="flex h-screen relative z-10">
-        @if($showSidebar)
+        @if($isAdminPage)
         <aside class="w-72 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border hidden lg:flex flex-col shrink-0">
             <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
                 <a href="{{ route('services.index') }}" class="flex items-center space-x-4 mb-10 group">
@@ -101,43 +111,10 @@
                 </a>
 
                 <nav class="space-y-2">
-                    <div class="pt-2" x-data="{ open: {{ (request()->routeIs('user.*')) ? 'true' : 'false' }} }">
-                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.my_account') }}</p>
-                        
-                        <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
-                            <div class="flex items-center space-x-3">
-                                <i data-lucide="user-cog" class="w-5 h-5"></i>
-                                <span class="text-sm font-bold">{{ __('panel.profile_settings') }}</span>
-                            </div>
-                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
-                        </button>
-
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
-                            <a href="{{ route('user.two-factor') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.two-factor') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
-                                <i data-lucide="shield-check" class="w-4 h-4"></i>
-                                <span>{{ __('panel.security_2fa') }}</span>
-                            </a>
-
-                            <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.api-keys') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
-                                <i data-lucide="key" class="w-4 h-4"></i>
-                                <span>{{ __('panel.api_keys') }}</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    @if(auth()->user()?->role === 'admin')
-                    <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
+                    <div class="pt-6">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
                         
-                        <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
-                            <div class="flex items-center space-x-3">
-                                <i data-lucide="shield-check" class="w-5 h-5"></i>
-                                <span class="text-sm font-bold">{{ __('panel.administrator') }}</span>
-                            </div>
-                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
-                        </button>
-                        
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
+                        <div class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
                             <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('dashboard') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                                 <span>{{ __('panel.global_analytics') }}</span>
@@ -172,42 +149,21 @@
                             </a>
                         </div>
                     </div>
-                    @endif
                 </nav>
-            </div>
-
-            <div class="mt-auto p-8 border-t border-slate-100 dark:border-slate-800/50">
-                <div class="flex items-center space-x-4 mb-6">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()?->name ?? __('panel.guest') }}</p>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()?->role ?? 'N/A' }}</p>
-                    </div>
-                </div>
-                
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button class="w-full flex items-center space-x-3 px-5 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all duration-300 group">
-                        <i data-lucide="log-out" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
-                        <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.sign_out') }}</span>
-                    </button>
-                </form>
             </div>
         </aside>
         @endif
 
         <div class="flex-1 flex flex-col overflow-hidden relative">
-            <header class="h-20 glass dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-6 md:px-10 shrink-0 z-10">
+            <header class="h-20 glass dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-6 md:px-10 shrink-0 z-10 w-full">
                 <div class="flex items-center space-x-4">
-                    @if($showSidebar)
-                    <button class="lg:hidden p-2.5 rounded-xl glass-hover text-slate-500" @click="mobileSidebar = true">
+                    @if(!$isMinimalPage)
+                    <button class="p-2.5 rounded-xl glass-hover text-slate-500 {{ $isAdminPage ? 'lg:hidden' : '' }}" @click="mobileSidebar = true">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     @endif
                     
-                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group {{ $showSidebar ? 'lg:hidden' : '' }}">
+                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group">
                         <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-110 transition-transform">
                             <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
                         </div>
@@ -226,6 +182,44 @@
                         <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-brand-400"></i>
                         <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-600"></i>
                     </button>
+
+                    <div class="relative" x-data="{ userMenu: false }">
+                        <button @click="userMenu = !userMenu" @click.away="userMenu = false" class="p-2.5 rounded-xl glass-hover text-slate-500 transition-all border border-slate-200 dark:border-dark-border flex items-center justify-center">
+                            <i data-lucide="user" class="w-5 h-5 text-slate-600 dark:text-slate-400"></i>
+                        </button>
+                        
+                        <div x-show="userMenu" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="absolute right-0 mt-3 w-56 glass dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden z-50 py-2" style="display: none;">
+                            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 mb-2">
+                                <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()?->name ?? __('panel.guest') }}</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()?->email }}</p>
+                            </div>
+                            
+                            <a href="{{ route('user.account') }}" class="flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors {{ request()->routeIs('user.account') ? 'text-brand-500' : 'text-slate-600 dark:text-slate-300' }}">
+                                <i data-lucide="user-cog" class="w-4 h-4"></i>
+                                <span class="text-xs font-bold">{{ __('panel.profile_settings') }}</span>
+                            </a>
+                            
+                            <a href="{{ route('user.two-factor') }}" class="flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors {{ request()->routeIs('user.two-factor') ? 'text-brand-500' : 'text-slate-600 dark:text-slate-300' }}">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                <span class="text-xs font-bold">{{ __('panel.security_2fa') }}</span>
+                            </a>
+                            
+                            <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors {{ request()->routeIs('user.api-keys') ? 'text-brand-500' : 'text-slate-600 dark:text-slate-300' }}">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                                <span class="text-xs font-bold">{{ __('panel.api_keys') }}</span>
+                            </a>
+                            
+                            <div class="border-t border-slate-100 dark:border-slate-800 mt-2 pt-2">
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button class="w-full flex items-center space-x-3 px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+                                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                                        <span class="text-xs font-bold">{{ __('panel.sign_out') }}</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -237,7 +231,7 @@
         </div>
     </div>
 
-    <div x-show="mobileSidebar" class="fixed inset-0 z-[100] lg:hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
+    <div x-show="mobileSidebar" class="fixed inset-0 z-[100]" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="mobileSidebar = false"></div>
         <aside class="absolute top-0 left-0 bottom-0 w-72 glass dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col transform transition-transform duration-300" :class="mobileSidebar ? 'translate-x-0' : '-translate-x-full'">
             <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -258,31 +252,9 @@
                         <span class="text-sm font-bold">{{ __('panel.my_services') }}</span>
                     </a>
                     
-                    <div class="pt-2" x-data="{ open: {{ (request()->routeIs('user.*')) ? 'true' : 'false' }} }">
-                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4 mt-2">{{ __('panel.my_account') }}</p>
-                        
-                        <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 group">
-                            <div class="flex items-center space-x-3">
-                                <i data-lucide="user-cog" class="w-5 h-5"></i>
-                                <span class="text-sm font-bold">{{ __('panel.profile_settings') }}</span>
-                            </div>
-                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
-                        </button>
 
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-2 ml-4 space-y-1 border-l-2 border-slate-100 dark:border-white/5 pl-4">
-                            <a href="{{ route('user.two-factor') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.two-factor') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
-                                <i data-lucide="shield-check" class="w-4 h-4"></i>
-                                <span>{{ __('panel.security_2fa') }}</span>
-                            </a>
 
-                            <a href="{{ route('user.api-keys') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('user.api-keys') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
-                                <i data-lucide="key" class="w-4 h-4"></i>
-                                <span>{{ __('panel.api_keys') }}</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    @if(auth()->user()?->role === 'admin')
+                    @if(auth()->user()?->role === 'admin' && !request()->routeIs('user.*'))
                     <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
                         
@@ -333,25 +305,7 @@
                 </nav>
             </div>
             
-            <div class="mt-auto p-8 border-t border-slate-100 dark:border-slate-800/50">
-                <div class="flex items-center space-x-4 mb-6">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ auth()->user()?->name ?? __('panel.guest') }}</p>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ auth()->user()?->role ?? 'N/A' }}</p>
-                    </div>
-                </div>
-                
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button class="w-full flex items-center space-x-3 px-5 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all duration-300 group">
-                        <i data-lucide="log-out" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
-                        <span class="text-[10px] font-black uppercase tracking-widest">{{ __('panel.sign_out') }}</span>
-                    </button>
-                </form>
-            </div>
+
         </aside>
     </div>
 

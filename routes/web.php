@@ -43,6 +43,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/user/api-keys', [ApiKeyController::class, 'store'])->name('user.api-keys.store');
     Route::delete('/user/api-keys/{keyId}', [ApiKeyController::class, 'destroy'])->name('user.api-keys.destroy');
     
+    // User Profile
+    Route::get('/user/account', [\App\Http\Controllers\AccountController::class, 'edit'])->name('user.account');
+    Route::put('/user/account', [\App\Http\Controllers\AccountController::class, 'update'])->name('user.account.update');
+    
     // 2FA Setup
     Route::get('/user/two-factor', [TwoFactorController::class, 'showSetup'])->name('user.two-factor');
     Route::post('/user/two-factor/enable', [TwoFactorController::class, 'enable'])->name('user.two-factor.enable');
