@@ -115,6 +115,23 @@ class FileUser implements Authenticatable
         }
     }
 
+    public function hasPermission($permission)
+    {
+        if ($this->role === 'admin') return true;
+        $roleModel = \App\Models\Role::find($this->role);
+        if (!$roleModel) return false;
+        return in_array($permission, $roleModel->permissions ?? []);
+    }
+
+    public function isAdmin()
+    {
+        if ($this->role === 'admin') return true;
+        $roleModel = \App\Models\Role::find($this->role);
+        if (!$roleModel) return false;
+        $adminPerms = ['manage_users', 'manage_settings', 'manage_roles', 'manage_eggs', 'manage_network', 'view_logs'];
+        return count(array_intersect($adminPerms, $roleModel->permissions ?? [])) > 0;
+    }
+
     public function getAuthIdentifierName() { return 'id'; }
     public function getAuthIdentifier() { return $this->id; }
     public function getAuthPasswordName() { return 'password'; }

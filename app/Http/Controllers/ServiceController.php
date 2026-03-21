@@ -15,7 +15,7 @@ class ServiceController extends Controller
         $user = auth()->user();
         $services = Service::all();
 
-        if ($user->role !== 'admin') {
+        if (!$user->isAdmin() && !$user->hasPermission('view_services')) {
             $services = $services->filter(function($service) use ($user) {
                 return isset($service->allowed_users) && in_array($user->id, $service->allowed_users);
             });
@@ -27,7 +27,7 @@ class ServiceController extends Controller
     private function checkAccess($service)
     {
         $user = Auth::user();
-        if ($user->role === 'admin') return true;
+        if ($user->isAdmin() || $user->hasPermission('view_services')) return true;
         
         if (isset($service->allowed_users) && in_array($user->id, $service->allowed_users)) {
             return true;
@@ -39,7 +39,7 @@ class ServiceController extends Controller
     public function create()
     {
         // Only admins can create services
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('create_services')) abort(403);
         
         $eggs = Egg::all();
         if (count($eggs) === 0) {
@@ -230,7 +230,7 @@ class ServiceController extends Controller
         $user = auth()->user();
         
         // Quota Enforcement (only for non-admins or if you want to limit admins too)
-        if ($user->role !== 'admin') {
+        if (!$user->isAdmin()) {
             $runningServices = Service::all()->filter(function($s) use ($user) {
                 return in_array($user->id, $s->allowed_users ?? []) && $s->getStatus() === 'running';
             });
@@ -290,7 +290,7 @@ class ServiceController extends Controller
     {
         $user = Auth::user();
         $services = Service::all();
-        if ($user->role !== 'admin') {
+        if (!$user->isAdmin() && !$user->hasPermission('view_services')) {
             $services = $services->filter(fn($s) => isset($s->allowed_users) && in_array($user->id, $s->allowed_users));
         }
 
@@ -310,7 +310,7 @@ class ServiceController extends Controller
     {
         $user = Auth::user();
         $services = Service::all();
-        if ($user->role !== 'admin') {
+        if (!$user->isAdmin() && !$user->hasPermission('view_services')) {
             $services = $services->filter(fn($s) => isset($s->allowed_users) && in_array($user->id, $s->allowed_users));
         }
 
@@ -509,7 +509,7 @@ WantedBy=multi-user.target";
 
     public function clone($id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('create_services')) abort(403);
 
         $service = Service::find($id);
         if (!$service) abort(404);
@@ -536,7 +536,7 @@ WantedBy=multi-user.target";
 
     public function permissions($id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('manage_settings')) abort(403);
         
         $service = Service::find($id);
         if (!$service) abort(404);
@@ -548,7 +548,7 @@ WantedBy=multi-user.target";
 
     public function updatePermissions(Request $request, $id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->isAdmin() && !Auth::user()->hasPermission('manage_settings')) abort(403);
 
         $service = Service::find($id);
         if (!$service) abort(404);

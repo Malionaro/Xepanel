@@ -6,7 +6,7 @@
 <div class="space-y-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.system_accounts') }}</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">{{ __('panel.system_accounts') }}</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.manage_user_access') }}</p>
         </div>
         <a href="{{ route('users.create') }}" class="flex items-center space-x-3 bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl shadow-brand-500/25 transition-all hover:-translate-y-1 active:scale-95 shrink-0">

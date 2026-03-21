@@ -8,7 +8,7 @@
 <div class="max-w-5xl mx-auto space-y-10 pb-20">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.provision_egg') }}</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">{{ __('panel.provision_egg') }}</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.provision_egg_desc') }}</p>
         </div>
         <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1 shrink-0 shadow-sm">
@@ -179,7 +179,7 @@
                     <i data-lucide="terminal" class="w-4 h-4 mr-3 text-red-500"></i>
                     {{ __('panel.initialization_protocol') }}
                 </h3>
-                <span class="text-[9px] font-black text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm uppercase tracking-widest italic">{{ __('panel.immutable_setup_cycle') }}</span>
+                <span class="text-[9px] font-black text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm uppercase tracking-widest">{{ __('panel.immutable_setup_cycle') }}</span>
             </div>
             <div id="install-script-editor" class="h-80 bg-[#020617] text-sm"></div>
             <textarea name="install_script" id="install_script_hidden" class="hidden"></textarea>
@@ -188,7 +188,7 @@
         <div class="pt-6">
             <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-6 rounded-[2.5rem] transition-all shadow-2xl shadow-brand-500/25 active:scale-[0.98] flex items-center justify-center space-x-4 group/submit">
                 <i data-lucide="save" class="w-7 h-7 transition-transform group-hover/submit:scale-125"></i>
-                <span class="text-xl uppercase tracking-[0.2em] italic">{{ __('panel.commit_new_egg') }}</span>
+                <span class="text-xl uppercase tracking-[0.2em]">{{ __('panel.commit_new_egg') }}</span>
             </button>
         </div>
     </form>
@@ -201,7 +201,7 @@
             <div class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 border border-brand-500/20">
                 <i data-lucide="palette" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-2xl font-black text-white tracking-tight uppercase italic">{{ __('panel.protocol_visuals') }}</h3>
+            <h3 class="text-2xl font-black text-white tracking-tight uppercase">{{ __('panel.protocol_visuals') }}</h3>
         </div>
         <div class="grid grid-cols-6 gap-4 max-h-96 overflow-y-auto p-4 custom-scrollbar">
             @php $icons = ['box', 'terminal', 'database', 'globe', 'server', 'shield', 'zap', 'cpu', 'container', 'hard-drive', 'activity', 'code', 'layout', 'layers', 'git-branch', 'disc', 'music', 'gamepad-2', 'bot', 'cloud', 'lock', 'key', 'mail', 'anchor', 'package', 'cpu', 'flask-conical', 'binary', 'atom']; @endphp

@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto space-y-10">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Identity Protection</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">Identity Protection</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Fortify your account with multi-factor authentication protocols.</p>
         </div>
     </div>
@@ -65,7 +65,7 @@
                         <div class="w-14 h-14 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 border border-brand-500/20 shadow-lg shadow-brand-500/5">
                             <i data-lucide="smartphone" class="w-7 h-7"></i>
                         </div>
-                        <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight uppercase tracking-widest italic">Phase 1: Sync</h3>
+                        <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight uppercase tracking-widest">Phase 1: Sync</h3>
                     </div>
                     <p class="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Capture this unique QR signature using your preferred mobile authenticator to generate your first token.</p>
                     
@@ -90,7 +90,7 @@
                         <div class="w-14 h-14 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 border border-brand-500/20 shadow-lg shadow-brand-500/5">
                             <i data-lucide="key-round" class="w-7 h-7"></i>
                         </div>
-                        <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight uppercase tracking-widest italic">Phase 2: Verify</h3>
+                        <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight uppercase tracking-widest">Phase 2: Verify</h3>
                     </div>
                     <p class="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Initialize the security policy by submitting the current 6-digit sequence from your device.</p>
 

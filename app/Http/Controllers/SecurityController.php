@@ -12,7 +12,7 @@ class SecurityController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_settings')) abort(403);
 
         $logs = ActivityLog::all()->filter(function($log) {
             return in_array($log['action'], ['User Logged In', 'Failed Login Attempt', '2FA Challenge', 'User Logged Out']);
@@ -25,7 +25,7 @@ class SecurityController extends Controller
 
     public function destroySession($id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_settings')) abort(403);
 
         $path = storage_path('framework/sessions/' . $id);
         if (File::exists($path)) {

@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    @if(auth()->user()->role === 'admin')
+    @if(auth()->user()->isAdmin())
     <!-- Global Admin Overview -->
     <div id="admin-overview-container" class="space-y-6 md:space-y-8">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -215,7 +215,7 @@
                     <div class="w-20 h-20 bg-slate-100 dark:bg-dark-card rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
                         <i data-lucide="layout-grid" class="w-10 h-10"></i>
                     </div>
-                    <p class="text-slate-400 font-bold italic">{{ __('panel.no_services_deployed') }}</p>
+                    <p class="text-slate-400 font-bold">{{ __('panel.no_services_deployed') }}</p>
                     <a href="{{ route('services.create') }}" class="inline-block mt-6 text-brand-500 font-black text-[10px] uppercase tracking-[0.2em] hover:text-brand-600 transition-colors underline underline-offset-8">{{ __('panel.deploy_first') }}</a>
                 </div>
             @endforelse

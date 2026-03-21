@@ -6,7 +6,7 @@
 <div class="space-y-10">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">API Schlüssel</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">API Schlüssel</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Generate and manage cryptographic tokens for automated infrastructure management.</p>
         </div>
     </div>
@@ -75,7 +75,7 @@
                                                 <div class="w-28 h-28 bg-white dark:bg-slate-900 rounded-[3rem] flex items-center justify-center text-6xl shadow-2xl border border-slate-100 dark:border-white/5 relative z-10 animate-bounce">🔑</div>
                                             </div>
                                             <div class="max-w-sm mx-auto">
-                                                <p class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight italic">No Tokens Detected</p>
+                                                <p class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">No Tokens Detected</p>
                                                 <p class="text-sm text-slate-500 font-medium mt-3 leading-relaxed uppercase tracking-widest">External authentication protocols are currently inactive for this account.</p>
                                             </div>
                                         </div>
@@ -98,7 +98,7 @@
                     <div class="w-14 h-14 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-500 border border-brand-500/20 shadow-lg shadow-brand-500/5 group-hover:scale-110 transition-transform">
                         <i data-lucide="plus-circle" class="w-8 h-8"></i>
                     </div>
-                    <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight uppercase italic">Issue Key</h3>
+                    <h3 class="font-black text-2xl text-slate-900 dark:text-white tracking-tight uppercase">Issue Key</h3>
                 </div>
                 
                 <div class="space-y-4 relative z-10">
@@ -129,7 +129,7 @@
                     <div class="relative z-10">
                         <input type="text" value="{{ $lastAdded['token'] }}" class="w-full bg-white dark:bg-slate-950 border border-amber-500/30 rounded-2xl py-5 px-8 text-slate-900 dark:text-white font-mono text-sm select-all outline-none shadow-inner font-bold" readonly id="new-token-input">
                     </div>
-                    <p class="text-[10px] text-amber-600 dark:text-amber-500 font-black uppercase tracking-[0.1em] leading-relaxed relative z-10 italic">
+                    <p class="text-[10px] text-amber-600 dark:text-amber-500 font-black uppercase tracking-[0.1em] leading-relaxed relative z-10">
                         This credential will be encrypted and hidden permanently after page navigation. Secure it now.
                     </p>
                 </div>

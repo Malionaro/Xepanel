@@ -6,7 +6,7 @@
 <div class="space-y-10">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight uppercase italic tracking-[0.05em]">{{ __('panel.task_automation') }}</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight uppercase tracking-[0.05em]">{{ __('panel.task_automation') }}</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.task_automation_desc') }}</p>
         </div>
         <a href="{{ route('services.show', $service->id) }}" class="flex items-center space-x-3 px-6 py-3 rounded-2xl glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1">

@@ -9,7 +9,7 @@ class ActivityLogController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role !== 'admin') {
+        if (!Auth::user()->hasPermission('view_logs')) {
             abort(403);
         }
 

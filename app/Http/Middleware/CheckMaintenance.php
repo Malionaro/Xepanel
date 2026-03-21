@@ -19,7 +19,7 @@ class CheckMaintenance
     {
         if (Setting::get('maintenance_mode', false)) {
             // Check if user is logged in and is admin
-            if (Auth::check() && Auth::user()->role === 'admin') {
+            if (Auth::check() && Auth::user()->isAdmin()) {
                 return $next($request);
             }
 

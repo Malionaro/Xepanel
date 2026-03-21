@@ -6,7 +6,7 @@
 <div class="space-y-10 pb-20">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">Security & Sessions</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">Security & Sessions</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">Monitor real-time access attempts and terminate unauthorized communication sessions.</p>
         </div>
         <div class="flex items-center space-x-3 shrink-0">

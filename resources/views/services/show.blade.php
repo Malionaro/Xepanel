@@ -49,7 +49,7 @@
         <!-- Quick Action Bar -->
         <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
             <div class="flex items-center justify-around sm:justify-start glass dark:bg-dark-card p-1.5 rounded-2xl border-slate-200 dark:border-dark-border shadow-sm">
-                @if(Auth::user()->role === 'admin')
+                @if(Auth::user()->isAdmin() || Auth::user()->hasPermission('manage_settings'))
                 <a href="{{ route('services.permissions', $service->id) }}" class="group flex items-center px-3 py-2.5 rounded-xl text-slate-500 hover:text-purple-500 hover:bg-purple-500/10 transition-all duration-500 overflow-hidden sm:max-w-[46px] sm:hover:max-w-[200px]" title="{{ __('panel.permissions') }}">
                     <i data-lucide="users" class="w-5 h-5 shrink-0"></i>
                     <span class="ml-3 whitespace-nowrap opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-500 font-black text-[10px] uppercase tracking-[0.2em] hidden sm:block">{{ __('panel.permissions') }}</span>
@@ -203,7 +203,7 @@
                 </div>
             </div>
 
-            @if(Auth::user()->role === 'admin')
+            @if(Auth::user()->isAdmin() || Auth::user()->hasPermission('delete_services'))
             <form action="{{ route('services.destroy', $service->id) }}" method="POST" onsubmit="return confirm('{{ __('panel.confirm_delete_service') }}')" class="px-8">
                 @csrf
                 @method('DELETE')
@@ -242,17 +242,17 @@
                 </div>
                 
                 <div id="console-output" class="flex-1 bg-[#020617] p-6 md:p-10 font-mono text-[10px] md:text-xs leading-relaxed overflow-y-auto text-slate-300 whitespace-pre-wrap selection:bg-brand-500/30 custom-scrollbar transition-all duration-500">
-                    <div class="flex items-center space-x-3 text-brand-500/60 font-black italic mb-4 md:mb-6">
+                    <div class="flex items-center space-x-3 text-brand-500/60 font-black mb-4 md:mb-6">
                         <span>system@filepanel:~$</span>
                         <span class="animate-pulse">_</span>
                     </div>
-                    <div class="text-slate-500 italic opacity-50">{{ __('panel.syncing') }}</div>
+                    <div class="text-slate-500 opacity-50">{{ __('panel.syncing') }}</div>
                 </div>
                 
                 <!-- Web Terminal Input -->
                 <div class="px-4 md:px-8 py-4 md:py-8 border-t border-slate-200 dark:border-dark-border bg-white/50 dark:bg-dark-card/50">
                     <form id="terminal-form" class="flex items-center bg-white dark:bg-slate-950 border border-slate-200 dark:border-dark-border rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 shadow-sm focus-within:shadow-xl focus-within:shadow-brand-500/10 focus-within:border-brand-500/50 transition-all" onsubmit="sendCommand(event)">
-                        <span class="text-brand-500 mr-3 md:mr-4 font-mono text-base md:text-lg font-black italic">λ</span>
+                        <span class="text-brand-500 mr-3 md:mr-4 font-mono text-base md:text-lg font-black">λ</span>
                         <input type="text" id="terminal-input" class="flex-1 bg-transparent text-slate-700 dark:text-slate-200 font-mono text-xs md:text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600" placeholder="{{ __('panel.forward_command') }}" autocomplete="off">
                         <div class="hidden sm:flex items-center space-x-3 ml-4 md:ml-6">
                             <span class="text-[8px] md:text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-md uppercase tracking-widest shadow-sm">{{ __('panel.execute') }}</span>
@@ -394,7 +394,7 @@
             .then(data => {
                 if (data.logs !== lastLogContent) {
                     if (!data.logs) {
-                        consoleOutput.innerHTML = '<div class="text-slate-500 italic opacity-50">{{ __('panel.awaiting_data') }}</div>';
+                        consoleOutput.innerHTML = '<div class="text-slate-500 opacity-50">{{ __('panel.awaiting_data') }}</div>';
                     } else {
                         consoleOutput.textContent = data.logs;
                     }
@@ -548,7 +548,7 @@
     });
 
     function clearConsole() {
-        consoleOutput.innerHTML = '<div class="text-slate-500 italic opacity-50">{{ __('panel.awaiting_data') }}</div>';
+        consoleOutput.innerHTML = '<div class="text-slate-500 opacity-50">{{ __('panel.awaiting_data') }}</div>';
         lastLogContent = '';
     }
 

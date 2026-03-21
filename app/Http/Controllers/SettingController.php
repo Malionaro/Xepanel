@@ -12,7 +12,7 @@ class SettingController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role !== 'admin') {
+        if (!Auth::user()->hasPermission('manage_settings')) {
             abort(403);
         }
 
@@ -22,7 +22,7 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
-        if (Auth::user()->role !== 'admin') {
+        if (!Auth::user()->hasPermission('manage_settings')) {
             abort(403);
         }
 
@@ -90,7 +90,7 @@ class SettingController extends Controller
      */
     public function runUpdate()
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_settings')) abort(403);
 
         $logPath = storage_path('logs/update.log');
         

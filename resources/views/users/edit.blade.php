@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto space-y-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.modify_identity') }}</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">{{ __('panel.modify_identity') }}</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.update_credentials_for', ['name' => $user->name]) }}</p>
         </div>
         <a href="{{ route('users.index') }}" class="flex items-center space-x-3 glass dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:-translate-x-1 shrink-0 shadow-sm">
@@ -47,11 +47,14 @@
                 <div class="space-y-3">
                     <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.system_role') }}</label>
                     <div class="relative">
-                        <select name="role" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm appearance-none cursor-pointer">
-                            <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>{{ __('panel.regular_user') }}</option>
-                            <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>{{ __('panel.administrator') }}</option>
-                        </select>
-                        <i data-lucide="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"></i>
+                    <select name="role" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-bold text-sm shadow-sm appearance-none cursor-pointer">
+                        @foreach(\App\Models\Role::all() as $roleOption)
+                            <option value="{{ $roleOption->id }}" {{ old('role', $user->role) == $roleOption->id ? 'selected' : '' }}>
+                                {{ $roleOption->id === 'admin' ? __('panel.administrator') : ($roleOption->id === 'user' ? __('panel.regular_user') : $roleOption->name) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <i data-lucide="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"></i>
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@ class NetworkController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role !== 'admin') {
+        if (!Auth::user()->hasPermission('manage_network')) {
             abort(403);
         }
 

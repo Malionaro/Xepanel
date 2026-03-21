@@ -11,7 +11,7 @@ class EggController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
         
         Egg::seedDefaults(); // Ensure some eggs exist
         $eggs = Egg::all();
@@ -20,13 +20,13 @@ class EggController extends Controller
 
     public function create()
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
         return view('eggs.create');
     }
 
     public function store(Request $request)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
 
         $data = $request->validate([
             'name' => 'required|string',
@@ -58,7 +58,7 @@ class EggController extends Controller
 
     public function edit($id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
         $egg = Egg::find($id);
         if (!$egg) abort(404);
         return view('eggs.edit', compact('egg'));
@@ -66,7 +66,7 @@ class EggController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
         $egg = Egg::find($id);
         if (!$egg) abort(404);
 
@@ -102,7 +102,7 @@ class EggController extends Controller
 
     public function clone($id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
         $egg = Egg::find($id);
         if (!$egg) abort(404);
 
@@ -118,7 +118,7 @@ class EggController extends Controller
 
     public function destroy($id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
         $egg = Egg::find($id);
         if ($egg) {
             $egg->delete();
@@ -129,7 +129,7 @@ class EggController extends Controller
 
     public function export($id)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
         $egg = Egg::find($id);
         if (!$egg) abort(404);
 
@@ -143,7 +143,7 @@ class EggController extends Controller
 
     public function import(Request $request)
     {
-        if (Auth::user()->role !== 'admin') abort(403);
+        if (!Auth::user()->hasPermission('manage_eggs')) abort(403);
 
         $request->validate([
             'import_file' => 'required|file|mimetypes:application/json,text/plain',

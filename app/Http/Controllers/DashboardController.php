@@ -16,7 +16,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         $services = Service::all();
 
-        if ($user->role !== 'admin') {
+        if (!$user->isAdmin()) {
             $services = $services->filter(function($service) use ($user) {
                 return isset($service->allowed_users) && in_array($user->id, $service->allowed_users);
             });
@@ -30,7 +30,7 @@ class DashboardController extends Controller
 
     public function adminStats()
     {
-        if (auth()->user()->role !== 'admin') abort(403);
+        if (!auth()->user()->isAdmin()) abort(403);
         session_write_close(); // CRITICAL: Release session for long stats query
         
         $services = Service::all();

@@ -6,7 +6,7 @@
 <div class="space-y-10">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.egg_templates') }}</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">{{ __('panel.egg_templates') }}</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.egg_templates_desc') }}</p>
         </div>
         <div class="flex items-center space-x-4 shrink-0">

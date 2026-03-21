@@ -11,7 +11,7 @@
     <div id="file-manager-view" class="space-y-10 animate-fade-in">
         <div class="flex items-center justify-between gap-4">
             <div class="flex flex-col">
-                <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.file_manager') }}</h2>
+                <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">{{ __('panel.file_manager') }}</h2>
                 <p class="text-xs font-bold text-slate-500 mt-1">{{ __('panel.manage_files_for', ['name' => $service->name]) }}</p>
             </div>
             <div class="flex items-center space-x-4">

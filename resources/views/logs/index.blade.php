@@ -5,7 +5,7 @@
 @section('content')
 <div class="space-y-10">
     <div>
-        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.audit_trail') }}</h2>
+        <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">{{ __('panel.audit_trail') }}</h2>
         <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.audit_trail_desc') }}</p>
     </div>
 

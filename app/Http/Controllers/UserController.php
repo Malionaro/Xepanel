@@ -11,8 +11,8 @@ class UserController extends Controller
 {
     private function checkAdmin()
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized action. Admin role required.');
+        if (!Auth::user()->hasPermission('manage_users')) {
+            abort(403, 'Unauthorized action. Permission manage_users required.');
         }
     }
 
@@ -36,7 +36,11 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:admin,user',
+            'role' => ['required', function ($attribute, $value, $fail) {
+                if (!\App\Models\Role::find($value)) {
+                    $fail('The selected role is invalid.');
+                }
+            }],
             'max_ram_mb' => 'required|integer|min:128',
             'max_cpu_percent' => 'required|integer|min:10',
             'max_disk_mb' => 'required|integer|min:100',
@@ -79,7 +83,11 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email',
             'password' => 'nullable|string|min:6',
-            'role' => 'required|in:admin,user',
+            'role' => ['required', function ($attribute, $value, $fail) {
+                if (!\App\Models\Role::find($value)) {
+                    $fail('The selected role is invalid.');
+                }
+            }],
             'max_ram_mb' => 'required|integer|min:128',
             'max_cpu_percent' => 'required|integer|min:10',
             'max_disk_mb' => 'required|integer|min:100',
@@ -97,9 +105,9 @@ class UserController extends Controller
             $user->password = Hash::make($data['password']);
         }
         
-        // Prevent admin from removing their own admin role
-        if ($user->id == Auth::id() && $data['role'] !== 'admin') {
-            return back()->withErrors(['role' => 'You cannot remove your own admin role.']);
+        // Prevent users from changing their own role
+        if ($user->id == Auth::id() && $data['role'] !== $user->role) {
+            return back()->withErrors(['role' => 'You cannot change your own role.']);
         }
 
         $user->role = $data['role'];

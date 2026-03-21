@@ -14,7 +14,7 @@
                     <i data-lucide="refresh-cw" class="w-8 h-8 md:w-10 md:h-10"></i>
                 </div>
                 <div>
-                    <h3 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">{{ __('panel.system_core_update') }}</h3>
+                    <h3 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">{{ __('panel.system_core_update') }}</h3>
                     <div class="flex flex-wrap items-center gap-3 mt-2">
                         <div class="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[9px] font-mono font-bold text-blue-500 uppercase tracking-widest">
                             Build: {{ trim(@shell_exec('git rev-parse --short HEAD')) ?: 'STABLE' }}
@@ -143,7 +143,7 @@
                         <div class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-7 shadow-lg"></div>
                     </div>
                     <div>
-                        <span class="block text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight italic">{{ __('panel.allow_registration') }}</span>
+                        <span class="block text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{{ __('panel.allow_registration') }}</span>
                         <span class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{{ __('panel.allow_registration_desc') }}</span>
                     </div>
                 </label>
@@ -155,7 +155,7 @@
                         <div class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-7 shadow-lg"></div>
                     </div>
                     <div>
-                        <span class="block text-sm font-black text-red-600 dark:text-red-400 uppercase tracking-tight italic text-glow-red">{{ __('panel.maintenance_mode') }}</span>
+                        <span class="block text-sm font-black text-red-600 dark:text-red-400 uppercase tracking-tight text-glow-red">{{ __('panel.maintenance_mode') }}</span>
                         <span class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{{ __('panel.maintenance_mode_desc') }}</span>
                     </div>
                 </label>
@@ -192,7 +192,7 @@
         <div class="pt-6">
             <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-black py-6 rounded-[2.5rem] transition-all shadow-2xl shadow-brand-500/25 active:scale-[0.98] flex items-center justify-center space-x-4 group/submit">
                 <i data-lucide="check-circle" class="w-7 h-7 transition-transform group-hover/submit:scale-125"></i>
-                <span class="text-xl uppercase tracking-[0.2em] italic">{{ __('panel.commit_config') }}</span>
+                <span class="text-xl uppercase tracking-[0.2em]">{{ __('panel.commit_config') }}</span>
             </button>
         </div>
     </form>

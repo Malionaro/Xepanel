@@ -6,7 +6,7 @@
 <div class="space-y-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic tracking-[0.05em]">{{ __('panel.network_ports') }}</h2>
+            <h2 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase tracking-[0.05em]">{{ __('panel.network_ports') }}</h2>
             <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">{{ __('panel.network_monitor_desc') }}</p>
         </div>
         <div class="flex items-center space-x-3 shrink-0">
@@ -58,7 +58,7 @@
                                         <span class="text-[10px] font-black uppercase tracking-[0.15em]">{{ $port['service']->name }}</span>
                                     </a>
                                 @else
-                                    <div class="inline-flex items-center space-x-2 text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] italic opacity-60">
+                                    <div class="inline-flex items-center space-x-2 text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] opacity-60">
                                         <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                                         <span>{{ __('panel.system_protocol') }}</span>
                                     </div>

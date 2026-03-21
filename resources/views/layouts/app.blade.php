@@ -119,26 +119,37 @@
                                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                                 <span>{{ __('panel.global_analytics') }}</span>
                             </a>
+                            @if(auth()->user()?->hasPermission('manage_users'))
                             <a href="{{ route('users.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('users.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="users" class="w-4 h-4"></i>
                                 <span>{{ __('panel.user_management') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_roles'))
                             <a href="{{ route('admin.roles.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('admin.roles.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="shield-check" class="w-4 h-4"></i>
                                 <span>{{ __('panel.roles_permissions') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_eggs'))
                             <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('eggs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="egg" class="w-4 h-4"></i>
                                 <span>{{ __('panel.egg_templates') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_network'))
                             <a href="{{ route('network.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('network.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="globe" class="w-4 h-4"></i>
                                 <span>{{ __('panel.network') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('view_logs'))
                             <a href="{{ route('logs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('logs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="scroll-text" class="w-4 h-4"></i>
                                 <span>{{ __('panel.audit_trail') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_settings'))
                             <a href="{{ route('settings.security') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.security') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="shield-alert" class="w-4 h-4"></i>
                                 <span>{{ __('panel.security_sessions') }}</span>
@@ -147,6 +158,7 @@
                                 <i data-lucide="settings" class="w-4 h-4"></i>
                                 <span>{{ __('panel.panel_settings') }}</span>
                             </a>
+                            @endif
                         </div>
                     </div>
                 </nav>
@@ -163,7 +175,7 @@
                     </button>
                     @endif
                     
-                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group">
+                    <a href="{{ route('services.index') }}" class="flex items-center space-x-4 group {{ $isAdminPage ? 'lg:hidden' : '' }}">
                         <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-110 transition-transform">
                             <i data-lucide="{{ $panelIcon }}" class="w-6 h-6"></i>
                         </div>
@@ -172,7 +184,7 @@
                 </div>
                 
                 <div class="flex items-center space-x-4">
-                    @if(auth()->user()?->role === 'admin')
+                    @if(auth()->user()?->isAdmin())
                     <a href="{{ route('dashboard') }}" class="px-6 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-white transition-all shadow-sm">
                         {{ __('panel.administration') }}
                     </a>
@@ -254,7 +266,7 @@
                     
 
 
-                    @if(auth()->user()?->role === 'admin' && !request()->routeIs('user.*'))
+                    @if(auth()->user()?->isAdmin() && !request()->routeIs('user.*'))
                     <div class="pt-6" x-data="{ open: {{ (request()->routeIs('dashboard') || request()->routeIs('users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('eggs.*') || request()->routeIs('network.*') || request()->routeIs('logs.*') || request()->routeIs('settings.*')) ? 'true' : 'false' }} }">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 ml-4">{{ __('panel.administration') }}</p>
                         
@@ -271,26 +283,37 @@
                                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                                 <span>{{ __('panel.global_analytics') }}</span>
                             </a>
+                            @if(auth()->user()?->hasPermission('manage_users'))
                             <a href="{{ route('users.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('users.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="users" class="w-4 h-4"></i>
                                 <span>{{ __('panel.user_management') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_roles'))
                             <a href="{{ route('admin.roles.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('admin.roles.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="shield-check" class="w-4 h-4"></i>
                                 <span>{{ __('panel.roles_permissions') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_eggs'))
                             <a href="{{ route('eggs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('eggs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="egg" class="w-4 h-4"></i>
                                 <span>{{ __('panel.egg_templates') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_network'))
                             <a href="{{ route('network.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('network.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="globe" class="w-4 h-4"></i>
                                 <span>{{ __('panel.network') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('view_logs'))
                             <a href="{{ route('logs.index') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('logs.*') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="scroll-text" class="w-4 h-4"></i>
                                 <span>{{ __('panel.audit_trail') }}</span>
                             </a>
+                            @endif
+                            @if(auth()->user()?->hasPermission('manage_settings'))
                             <a href="{{ route('settings.security') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('settings.security') ? 'text-brand-500' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
                                 <i data-lucide="shield-alert" class="w-4 h-4"></i>
                                 <span>{{ __('panel.security_sessions') }}</span>
@@ -299,6 +322,7 @@
                                 <i data-lucide="settings" class="w-4 h-4"></i>
                                 <span>{{ __('panel.panel_settings') }}</span>
                             </a>
+                            @endif
                         </div>
                     </div>
                     @endif

@@ -14,7 +14,7 @@ class BackupController extends Controller
     private function checkAccess($service)
     {
         $user = auth()->user();
-        if ($user->role === 'admin') return true;
+        if ($user->isAdmin() || $user->hasPermission('view_services')) return true;
         if (isset($service->allowed_users) && in_array($user->id, $service->allowed_users)) return true;
         abort(403);
     }
