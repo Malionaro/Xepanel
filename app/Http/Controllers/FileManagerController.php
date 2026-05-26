@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Service;
 use App\Models\ActivityLog;
+use App\Models\Service;
+use App\Support\SafePath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 
@@ -12,48 +13,62 @@ class FileManagerController extends Controller
     private function checkAccess($service)
     {
         $user = auth()->user();
-        if ($user->isAdmin() || $user->hasPermission('view_services')) return true;
-        if (isset($service->allowed_users) && in_array($user->id, $service->allowed_users)) return true;
+        if ($user->isAdmin() || $user->hasPermission('view_services')) {
+            return true;
+        }
+        if (isset($service->allowed_users) && in_array($user->id, $service->allowed_users)) {
+            return true;
+        }
+        abort(403);
+    }
+
+    private function checkMutationAccess($service)
+    {
+        $user = auth()->user();
+        if ($user->isAdmin() || $user->hasPermission('edit_services')) {
+            return true;
+        }
         abort(403);
     }
 
     private function getSafePath($service, $path = '')
     {
+        return SafePath::resolve($this->getServiceRoot($service), $path);
+    }
+
+    private function getSafePathForNewItem($service, $path = '')
+    {
+        return SafePath::resolve($this->getServiceRoot($service), $path, true);
+    }
+
+    private function getServiceRoot($service)
+    {
         if ($service->type === 'docker') {
             $basePath = \App\Models\Setting::get('docker_base_path', '/var/lib/panel/docker');
-            $root = $basePath . '/' . $service->id;
-        } else {
-            $root = $service->working_dir;
+
+            return $basePath.'/'.$service->id;
         }
 
-        if (!is_dir($root)) {
-            @mkdir($root, 0775, true);
-        }
-
-        $root = realpath($root);
-        $fullPath = realpath($root . '/' . ($path ?: ''));
-        
-        if (!$fullPath || !str_starts_with($fullPath, $root)) {
-            return $root;
-        }
-        return $fullPath;
+        return $service->working_dir;
     }
 
     public function index($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
-        
+
         $path = $this->getSafePath($service, $request->get('path', ''));
         $files = File::files($path);
         $directories = File::directories($path);
-        
+
         if ($service->type === 'docker') {
             $basePath = \App\Models\Setting::get('docker_base_path', '/var/lib/panel/docker');
-            $rootPath = realpath($basePath . '/' . $service->id);
+            $rootPath = SafePath::normalizeRoot($basePath.'/'.$service->id);
         } else {
-            $rootPath = realpath($service->working_dir);
+            $rootPath = SafePath::normalizeRoot($service->working_dir);
         }
 
         $relativePath = str_replace($rootPath, '', $path);
@@ -64,29 +79,36 @@ class FileManagerController extends Controller
     public function show($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
 
         $path = $this->getSafePath($service, $request->get('file'));
-        
-        if (!File::isFile($path)) abort(404);
-        
+
+        if (! File::isFile($path)) {
+            abort(404);
+        }
+
         return response()->json([
             'content' => File::get($path),
-            'filename' => basename($path)
+            'filename' => basename($path),
         ]);
     }
 
     public function save($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
-        $path = $this->getSafePath($service, $request->get('file'));
-        
+        $path = $this->getSafePathForNewItem($service, $request->get('file'));
+
         File::put($path, $request->get('content'));
-        ActivityLog::log("Modified file", "Service: {$service->name}, File: " . basename($path));
+        ActivityLog::log('Modified file', "Service: {$service->name}, File: ".basename($path));
 
         return back()->with('status', 'File saved!');
     }
@@ -94,16 +116,19 @@ class FileManagerController extends Controller
     public function createFile($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $request->validate([
             'filename' => 'required|string|max:255',
-            'path' => 'nullable|string'
+            'path' => 'nullable|string',
         ]);
 
         $dirPath = $this->getSafePath($service, $request->get('path', ''));
-        $filePath = $dirPath . '/' . basename($request->get('filename'));
+        $filePath = $dirPath.'/'.SafePath::cleanFilename($request->get('filename'));
 
         if (File::exists($filePath)) {
             return back()->withErrors(['error' => 'A file or directory with that name already exists.']);
@@ -111,7 +136,7 @@ class FileManagerController extends Controller
 
         File::put($filePath, '');
 
-        ActivityLog::log("Created empty file", "Service: {$service->name}, File: " . basename($filePath));
+        ActivityLog::log('Created empty file', "Service: {$service->name}, File: ".basename($filePath));
 
         return back()->with('status', 'File created successfully!');
     }
@@ -119,16 +144,19 @@ class FileManagerController extends Controller
     public function createDirectory($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $request->validate([
             'dirname' => 'required|string|max:255',
-            'path' => 'nullable|string'
+            'path' => 'nullable|string',
         ]);
 
         $parentPath = $this->getSafePath($service, $request->get('path', ''));
-        $newPath = $parentPath . '/' . basename($request->get('dirname'));
+        $newPath = $parentPath.'/'.SafePath::cleanFilename($request->get('dirname'));
 
         if (File::exists($newPath)) {
             return back()->withErrors(['error' => 'A file or directory with that name already exists.']);
@@ -136,7 +164,7 @@ class FileManagerController extends Controller
 
         File::makeDirectory($newPath, 0775, true);
 
-        ActivityLog::log("Created directory", "Service: {$service->name}, Folder: " . basename($newPath));
+        ActivityLog::log('Created directory', "Service: {$service->name}, Folder: ".basename($newPath));
 
         return back()->with('status', 'Directory created successfully!');
     }
@@ -144,30 +172,36 @@ class FileManagerController extends Controller
     public function destroy($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $path = $this->getSafePath($service, $request->get('file'));
-        
+
         if (File::isFile($path)) {
-            ActivityLog::log("Deleted file", "Service: {$service->name}, File: " . basename($path));
+            ActivityLog::log('Deleted file', "Service: {$service->name}, File: ".basename($path));
             File::delete($path);
         } elseif (File::isDirectory($path)) {
-            ActivityLog::log("Deleted directory", "Service: {$service->name}, Dir: " . basename($path));
+            ActivityLog::log('Deleted directory', "Service: {$service->name}, Dir: ".basename($path));
             File::deleteDirectory($path);
         }
-        
+
         return back()->with('status', 'Deleted!');
     }
 
     public function massDestroy($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $files = $request->input('files', []);
-        
+
         if (empty($files)) {
             return back()->withErrors(['error' => 'No files selected for deletion.']);
         }
@@ -176,7 +210,7 @@ class FileManagerController extends Controller
 
         foreach ($files as $file) {
             $path = $this->getSafePath($service, $file);
-            
+
             if (File::isFile($path)) {
                 File::delete($path);
                 $deletedCount++;
@@ -186,7 +220,7 @@ class FileManagerController extends Controller
             }
         }
 
-        ActivityLog::log("Mass Deleted Files", "Service: {$service->name}, Count: {$deletedCount}");
+        ActivityLog::log('Mass Deleted Files', "Service: {$service->name}, Count: {$deletedCount}");
 
         return back()->with('status', "Successfully deleted {$deletedCount} items!");
     }
@@ -194,20 +228,24 @@ class FileManagerController extends Controller
     public function upload($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $request->validate([
             'upload_file' => 'required|file',
-            'path' => 'nullable|string'
+            'path' => 'nullable|string',
         ]);
 
         $path = $this->getSafePath($service, $request->get('path', ''));
         $file = $request->file('upload_file');
-        
-        $file->move($path, $file->getClientOriginalName());
 
-        ActivityLog::log("Uploaded file", "Service: {$service->name}, File: " . $file->getClientOriginalName());
+        $filename = SafePath::cleanFilename($file->getClientOriginalName());
+        $file->move($path, $filename);
+
+        ActivityLog::log('Uploaded file', "Service: {$service->name}, File: ".$filename);
 
         return back()->with('status', 'File uploaded successfully!');
     }
@@ -215,12 +253,15 @@ class FileManagerController extends Controller
     public function multiUpload($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) return response()->json(['error' => 'Service not found'], 404);
+        if (! $service) {
+            return response()->json(['error' => 'Service not found'], 404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $request->validate([
             'files.*' => 'required|file',
-            'path' => 'nullable|string'
+            'path' => 'nullable|string',
         ]);
 
         $path = $this->getSafePath($service, $request->get('path', ''));
@@ -228,12 +269,12 @@ class FileManagerController extends Controller
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $file->move($path, $file->getClientOriginalName());
+                $file->move($path, SafePath::cleanFilename($file->getClientOriginalName()));
                 $uploadedCount++;
             }
         }
 
-        ActivityLog::log("Multi-Upload", "Service: {$service->name}, Count: {$uploadedCount} files");
+        ActivityLog::log('Multi-Upload', "Service: {$service->name}, Count: {$uploadedCount} files");
 
         return response()->json(['success' => true, 'count' => $uploadedCount]);
     }
@@ -241,22 +282,31 @@ class FileManagerController extends Controller
     public function extract($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $path = $this->getSafePath($service, $request->get('file'));
-        
-        if (!File::isFile($path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'zip') {
+
+        if (! File::isFile($path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'zip') {
             return back()->withErrors(['error' => 'File is not a valid zip archive.']);
         }
 
         $zip = new \ZipArchive;
-        if ($zip->open($path) === TRUE) {
+        if ($zip->open($path) === true) {
             $extractPath = dirname($path);
+            if (! $this->zipEntriesAreSafe($zip, $extractPath)) {
+                $zip->close();
+
+                return back()->withErrors(['error' => 'Archive contains unsafe paths.']);
+            }
             $zip->extractTo($extractPath);
             $zip->close();
-            
-            ActivityLog::log("Extracted ZIP", "Service: {$service->name}, File: " . basename($path));
+
+            ActivityLog::log('Extracted ZIP', "Service: {$service->name}, File: ".basename($path));
+
             return back()->with('status', 'Archive extracted successfully!');
         }
 
@@ -266,8 +316,11 @@ class FileManagerController extends Controller
     public function massExtract($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $files = $request->input('files', []);
         if (empty($files)) {
@@ -279,23 +332,30 @@ class FileManagerController extends Controller
             $path = $this->getSafePath($service, $file);
             if (File::isFile($path) && strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'zip') {
                 $zip = new \ZipArchive;
-                if ($zip->open($path) === TRUE) {
-                    $zip->extractTo(dirname($path));
+                if ($zip->open($path) === true) {
+                    $extractPath = dirname($path);
+                    if ($this->zipEntriesAreSafe($zip, $extractPath)) {
+                        $zip->extractTo($extractPath);
+                        $extractedCount++;
+                    }
                     $zip->close();
-                    $extractedCount++;
                 }
             }
         }
 
-        ActivityLog::log("Mass Extracted ZIPs", "Service: {$service->name}, Count: {$extractedCount}");
+        ActivityLog::log('Mass Extracted ZIPs', "Service: {$service->name}, Count: {$extractedCount}");
+
         return back()->with('status', "Successfully extracted {$extractedCount} archives!");
     }
 
     public function compress($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $files = $request->input('files', []);
         if (empty($files)) {
@@ -303,11 +363,11 @@ class FileManagerController extends Controller
         }
 
         $baseDir = $this->getSafePath($service, $request->get('path', ''));
-        $zipName = 'archive_' . now()->format('Y-m-d_His') . '.zip';
-        $zipPath = $baseDir . '/' . $zipName;
+        $zipName = 'archive_'.now()->format('Y-m-d_His').'.zip';
+        $zipPath = $baseDir.'/'.$zipName;
 
-        $zip = new \ZipArchive();
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+        $zip = new \ZipArchive;
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
             foreach ($files as $file) {
                 $fullPath = $this->getSafePath($service, $file);
                 if (File::isFile($fullPath)) {
@@ -318,17 +378,18 @@ class FileManagerController extends Controller
                         \RecursiveIteratorIterator::LEAVES_ONLY
                     );
                     foreach ($filesInDir as $fileInDir) {
-                        if (!$fileInDir->isDir()) {
+                        if (! $fileInDir->isDir()) {
                             $filePath = $fileInDir->getRealPath();
-                            $relativePath = basename($fullPath) . '/' . substr($filePath, strlen($fullPath) + 1);
+                            $relativePath = basename($fullPath).'/'.substr($filePath, strlen($fullPath) + 1);
                             $zip->addFile($filePath, $relativePath);
                         }
                     }
                 }
             }
             $zip->close();
-            
-            ActivityLog::log("Compressed Items", "Service: {$service->name}, Created: {$zipName}");
+
+            ActivityLog::log('Compressed Items', "Service: {$service->name}, Created: {$zipName}");
+
             return back()->with('status', 'Archive created successfully!');
         }
 
@@ -338,17 +399,20 @@ class FileManagerController extends Controller
     public function rename($id, Request $request)
     {
         $service = Service::find($id);
-        if (!$service) abort(404);
+        if (! $service) {
+            abort(404);
+        }
         $this->checkAccess($service);
+        $this->checkMutationAccess($service);
 
         $request->validate([
             'file' => 'required|string',
-            'new_name' => 'required|string|max:255'
+            'new_name' => 'required|string|max:255',
         ]);
 
         $oldPath = $this->getSafePath($service, $request->get('file'));
         $parentDir = dirname($oldPath);
-        $newPath = $parentDir . '/' . basename($request->get('new_name'));
+        $newPath = $parentDir.'/'.SafePath::cleanFilename($request->get('new_name'));
 
         if (File::exists($newPath)) {
             return back()->withErrors(['error' => 'A file or directory with that name already exists.']);
@@ -360,8 +424,39 @@ class FileManagerController extends Controller
             rename($oldPath, $newPath);
         }
 
-        ActivityLog::log("Renamed item", "Service: {$service->name}, From: " . basename($oldPath) . " To: " . basename($newPath));
+        ActivityLog::log('Renamed item', "Service: {$service->name}, From: ".basename($oldPath).' To: '.basename($newPath));
 
         return back()->with('status', 'Item renamed successfully!');
+    }
+
+    private function zipEntriesAreSafe(\ZipArchive $zip, string $extractPath): bool
+    {
+        $root = SafePath::normalizeRoot($extractPath);
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if ($name === false || str_contains($name, "\0")) {
+                return false;
+            }
+
+            $normalized = str_replace('\\', '/', $name);
+            if (str_starts_with($normalized, '/') || preg_match('#(^|/)\.\.(/|$)#', $normalized)) {
+                return false;
+            }
+
+            $target = $root.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $normalized);
+            $parent = dirname($target);
+            if (! is_dir($parent) && ! mkdir($parent, 0775, true) && ! is_dir($parent)) {
+                return false;
+            }
+
+            try {
+                SafePath::assertWithinRoot($root, realpath($parent) ?: $parent);
+            } catch (\RuntimeException) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

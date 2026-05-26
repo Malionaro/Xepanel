@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'api.auth' => \App\Http\Middleware\CheckApiKey::class,
+            'permission' => \App\Http\Middleware\RequirePermission::class,
         ]);
         $middleware->web(append: [
             \App\Http\Middleware\SetLanguage::class,

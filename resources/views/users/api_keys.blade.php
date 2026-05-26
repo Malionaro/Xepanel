@@ -53,7 +53,7 @@
                                     </td>
                                     <td class="px-10 py-8">
                                         <code class="px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-xl font-mono text-xs text-brand-600 dark:text-brand-400 border border-slate-200 dark:border-white/10 shadow-inner">
-                                            {{ substr($key['token'], 0, 12) }}••••••••
+                                            {{ $key['token_prefix'] ?? substr($key['token'] ?? '', 0, 12) }}••••••••
                                         </code>
                                     </td>
                                     <td class="px-10 py-8 text-right">
@@ -113,10 +113,7 @@
             </form>
 
             @php
-                $lastAdded = null;
-                if(session('status') && isset($user->api_keys) && count($user->api_keys) > 0) {
-                    $lastAdded = end($user->api_keys);
-                }
+                $lastAdded = session('plain_api_token');
             @endphp
             @if($lastAdded)
                 <div class="p-10 bg-amber-500/10 border border-amber-500/20 rounded-[3.5rem] space-y-6 animate-in zoom-in duration-500 relative overflow-hidden shadow-xl ring-2 ring-amber-500/30">
@@ -127,7 +124,7 @@
                         <span class="text-xs font-black uppercase tracking-[0.2em]">Sensitive Resource</span>
                     </div>
                     <div class="relative z-10">
-                        <input type="text" value="{{ $lastAdded['token'] }}" class="w-full bg-white dark:bg-slate-950 border border-amber-500/30 rounded-2xl py-5 px-8 text-slate-900 dark:text-white font-mono text-sm select-all outline-none shadow-inner font-bold" readonly id="new-token-input">
+                        <input type="text" value="{{ $lastAdded }}" class="w-full bg-white dark:bg-slate-950 border border-amber-500/30 rounded-2xl py-5 px-8 text-slate-900 dark:text-white font-mono text-sm select-all outline-none shadow-inner font-bold" readonly id="new-token-input">
                     </div>
                     <p class="text-[10px] text-amber-600 dark:text-amber-500 font-black uppercase tracking-[0.1em] leading-relaxed relative z-10">
                         This credential will be encrypted and hidden permanently after page navigation. Secure it now.

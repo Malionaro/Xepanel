@@ -1,27 +1,26 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\ConsoleController;
-use App\Http\Controllers\FileManagerController;
-use App\Http\Controllers\DiscordController;
-
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\MetricsController;
-use App\Http\Controllers\BackupController;
-use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\TwoFactorController;
-use App\Http\Controllers\ApiKeyController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\NetworkController;
-use App\Http\Controllers\EggController;
-use App\Http\Controllers\StreamController;
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ConsoleController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiscordController;
+use App\Http\Controllers\EggController;
+use App\Http\Controllers\FileManagerController;
+use App\Http\Controllers\MetricsController;
+use App\Http\Controllers\NetworkController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StreamController;
+use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\UserController;
 use App\Models\Service;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/', [AuthController::class, 'login']);
@@ -34,50 +33,54 @@ Route::post('/two-factor-challenge', [TwoFactorController::class, 'verify'])->na
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/admin-stats', [DashboardController::class, 'adminStats'])->name('dashboard.admin-stats');
-    
+
     // Services
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
-    
+
     // API Keys
     Route::get('/user/api-keys', [ApiKeyController::class, 'index'])->name('user.api-keys');
     Route::post('/user/api-keys', [ApiKeyController::class, 'store'])->name('user.api-keys.store');
     Route::delete('/user/api-keys/{keyId}', [ApiKeyController::class, 'destroy'])->name('user.api-keys.destroy');
-    
+
     // User Profile
     Route::get('/user/account', [\App\Http\Controllers\AccountController::class, 'edit'])->name('user.account');
     Route::put('/user/account', [\App\Http\Controllers\AccountController::class, 'update'])->name('user.account.update');
-    
+
     // 2FA Setup
     Route::get('/user/two-factor', [TwoFactorController::class, 'showSetup'])->name('user.two-factor');
     Route::post('/user/two-factor/enable', [TwoFactorController::class, 'enable'])->name('user.two-factor.enable');
     Route::post('/user/two-factor/disable', [TwoFactorController::class, 'disable'])->name('user.two-factor.disable');
-    
+
     // System Metrics
     Route::get('/metrics/system', [MetricsController::class, 'getSystemStats'])->name('metrics.system');
     Route::get('/metrics/service/{id}', [MetricsController::class, 'getServiceStats'])->name('metrics.service');
     Route::get('/metrics/service/{id}/history', [MetricsController::class, 'getServiceHistory'])->name('metrics.history');
     Route::get('/metrics/service/{id}/history-24h', [MetricsController::class, 'getServiceHistory24h'])->name('metrics.history_24h');
     Route::get('/metrics/service/{id}/stream', [StreamController::class, 'streamStats'])->name('metrics.stream');
-    
+
     // Activity Logs
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('logs.index');
-    
+
     // User Management
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::middleware('permission:manage_users')->group(function () {
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
 
     // Role Management
-    Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('admin.roles.index');
-    Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('admin.roles.create');
-    Route::post('/roles', [\App\Http\Controllers\RoleController::class, 'store'])->name('admin.roles.store');
-    Route::get('/roles/{id}/edit', [\App\Http\Controllers\RoleController::class, 'edit'])->name('admin.roles.edit');
-    Route::put('/roles/{id}', [\App\Http\Controllers\RoleController::class, 'update'])->name('admin.roles.update');
-    Route::delete('/roles/{id}', [\App\Http\Controllers\RoleController::class, 'destroy'])->name('admin.roles.destroy');
-    
+    Route::middleware('permission:manage_roles')->group(function () {
+        Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('admin.roles.index');
+        Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('admin.roles.create');
+        Route::post('/roles', [\App\Http\Controllers\RoleController::class, 'store'])->name('admin.roles.store');
+        Route::get('/roles/{id}/edit', [\App\Http\Controllers\RoleController::class, 'edit'])->name('admin.roles.edit');
+        Route::put('/roles/{id}', [\App\Http\Controllers\RoleController::class, 'update'])->name('admin.roles.update');
+        Route::delete('/roles/{id}', [\App\Http\Controllers\RoleController::class, 'destroy'])->name('admin.roles.destroy');
+    });
+
     // Services Mass Actions
     Route::post('/services/start-all', [ServiceController::class, 'startAll'])->name('services.start-all');
     Route::post('/services/stop-all', [ServiceController::class, 'stopAll'])->name('services.stop-all');
@@ -96,7 +99,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{id}/stop', [ServiceController::class, 'stop'])->name('services.stop');
     Route::post('/services/{id}/reinstall', [ServiceController::class, 'reinstall'])->name('services.reinstall');
     Route::delete('/services/{id}', [ServiceController::class, 'destroy'])->name('services.destroy');
-    
+
     // Service ENVs
     Route::get('/services/{id}/envs', [ServiceController::class, 'envs'])->name('services.envs');
     Route::post('/services/{id}/envs', [ServiceController::class, 'storeEnv'])->name('services.envs.store');
@@ -110,14 +113,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/services/{id}/backups', [BackupController::class, 'index'])->name('services.backups');
     Route::post('/services/{id}/backups', [BackupController::class, 'store'])->name('services.backups.store');
     Route::get('/services/{id}/backups/{filename}/download', [BackupController::class, 'download'])->name('services.backups.download');
-    Route::delete('/services/{id}/backups/{filename}', [BackupController::class, 'destroy'])->name('services.backups.destroy');
 
     // Service Databases
     Route::get('/services/{id}/databases', [\App\Http\Controllers\DatabaseController::class, 'index'])->name('services.databases');
     Route::post('/services/{id}/databases', [\App\Http\Controllers\DatabaseController::class, 'store'])->name('services.databases.store');
     Route::delete('/services/{id}/databases/{dbId}', [\App\Http\Controllers\DatabaseController::class, 'destroy'])->name('services.databases.destroy');
     Route::delete('/services/{id}/backups/{filename}', [BackupController::class, 'destroy'])->name('services.backups.destroy');
-    
+
     // Scheduled Tasks
     Route::get('/services/{id}/schedules', [ScheduleController::class, 'index'])->name('services.schedules');
     Route::post('/services/{id}/schedules', [ScheduleController::class, 'store'])->name('services.schedules.store');
@@ -136,7 +138,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/services/{id}/logs', [ConsoleController::class, 'getLogs'])->name('services.logs');
     Route::get('/services/{id}/logs/stream', [StreamController::class, 'streamLogs'])->name('services.logs.stream');
     Route::post('/services/{id}/command', [ConsoleController::class, 'executeCommand'])->name('services.command');
-    
+
     // File Manager
     Route::get('/services/{id}/files', [FileManagerController::class, 'index'])->name('services.files');
     Route::get('/services/{id}/files/content', [FileManagerController::class, 'show'])->name('services.files.content');
@@ -151,12 +153,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{id}/files/rename', [FileManagerController::class, 'rename'])->name('services.files.rename');
     Route::delete('/services/{id}/files/mass', [FileManagerController::class, 'massDestroy'])->name('services.files.mass_destroy');
     Route::delete('/services/{id}/files', [FileManagerController::class, 'destroy'])->name('services.files.destroy');
-    
+
     // Panel Settings
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
-    Route::get('/settings/check-update', [SettingController::class, 'checkForUpdates'])->name('settings.check_update');
-    Route::post('/settings/run-update', [SettingController::class, 'runUpdate'])->name('settings.run_update');
+    Route::middleware('permission:manage_settings')->group(function () {
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('/settings/check-update', [SettingController::class, 'checkForUpdates'])->name('settings.check_update');
+        Route::post('/settings/run-update', [SettingController::class, 'runUpdate'])->name('settings.run_update');
+    });
 
     // Egg Management
     Route::get('/eggs', [EggController::class, 'index'])->name('eggs.index');
@@ -168,14 +172,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/eggs/{id}/export', [EggController::class, 'export'])->name('eggs.export');
     Route::put('/eggs/{id}', [EggController::class, 'update'])->name('eggs.update');
     Route::delete('/eggs/{id}', [EggController::class, 'destroy'])->name('eggs.destroy');
-    
+
     // Network/Ports
     Route::get('/network', [NetworkController::class, 'index'])->name('network.index');
 
     // Security Audit
     Route::get('/security', [SecurityController::class, 'index'])->name('settings.security');
     Route::delete('/security/sessions/{id}', [SecurityController::class, 'destroySession'])->name('settings.security.sessions.destroy');
-    
+
     // Discord Feed
     Route::get('/discord/messages', [DiscordController::class, 'getMessages']);
 });
@@ -192,21 +196,30 @@ Route::prefix('api')->middleware('api.auth')->group(function () {
 
     Route::post('/services/{id}/start', function ($id) {
         $service = \App\Models\Service::find($id);
-        if (!$service) return response()->json(['error' => 'Not found'], 404);
+        if (! $service) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
         $service->start();
+
         return response()->json(['status' => 'started', 'service' => $service->name]);
     });
 
     Route::post('/services/{id}/stop', function ($id) {
         $service = \App\Models\Service::find($id);
-        if (!$service) return response()->json(['error' => 'Not found'], 404);
+        if (! $service) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
         $service->stop();
+
         return response()->json(['status' => 'stopped', 'service' => $service->name]);
     });
 
     Route::get('/services/{id}/status', function ($id) {
         $service = \App\Models\Service::find($id);
-        if (!$service) return response()->json(['error' => 'Not found'], 404);
+        if (! $service) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
         return response()->json(['status' => $service->getStatus(), 'pid' => $service->pid]);
     });
 });

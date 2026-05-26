@@ -2,9 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\FileUser;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\FileUser;
+use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckApiKey
@@ -16,13 +17,13 @@ class CheckApiKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!\App\Models\Setting::get('enable_public_api', true)) {
+        if (! \App\Models\Setting::get('enable_public_api', true)) {
             return response()->json(['error' => 'API is currently disabled globally.'], 403);
         }
 
         $token = $request->bearerToken() ?? $request->input('api_token');
 
-        if (!$token) {
+        if (! $token) {
             return response()->json(['error' => 'API token missing'], 401);
         }
 
@@ -31,8 +32,18 @@ class CheckApiKey
 
         foreach ($users as $user) {
             if (isset($user->api_keys) && is_array($user->api_keys)) {
-                foreach ($user->api_keys as $keyData) {
-                    if ($keyData['token'] === $token) {
+                foreach ($user->api_keys as $index => $keyData) {
+                    if (isset($keyData['token_hash']) && Hash::check($token, $keyData['token_hash'])) {
+                        $authenticatedUser = $user;
+                        break 2;
+                    }
+
+                    // One-time backward compatibility for existing plaintext tokens.
+                    if (isset($keyData['token']) && hash_equals($keyData['token'], $token)) {
+                        $user->api_keys[$index]['token_hash'] = Hash::make($token);
+                        $user->api_keys[$index]['token_prefix'] = substr($token, 0, 12);
+                        unset($user->api_keys[$index]['token']);
+                        $user->save();
                         $authenticatedUser = $user;
                         break 2;
                     }
@@ -40,7 +51,7 @@ class CheckApiKey
             }
         }
 
-        if (!$authenticatedUser) {
+        if (! $authenticatedUser) {
             return response()->json(['error' => 'Invalid API token'], 401);
         }
 

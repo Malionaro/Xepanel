@@ -132,7 +132,7 @@
                 <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.execution_command') }}</label>
                 <div class="relative">
                     <i data-lucide="play-circle" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input type="text" name="start_command" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" placeholder="npm start">
+                    <input type="text" name="start_command" data-type-field="process" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" placeholder="npm start">
                 </div>
             </div>
         </div>
@@ -178,7 +178,7 @@
                 <label class="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('panel.override_command') }}</label>
                 <div class="relative">
                     <i data-lucide="terminal" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input type="text" name="start_command" class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" placeholder="sh startup.sh">
+                    <input type="text" name="start_command" data-type-field="docker" disabled class="w-full bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm" placeholder="sh startup.sh">
                 </div>
             </div>
         </div>
@@ -237,6 +237,8 @@
         const fieldsDock = document.getElementById('docker-fields');
 
         if (type === 'process') {
+            document.querySelectorAll('[data-type-field="process"]').forEach(input => input.disabled = false);
+            document.querySelectorAll('[data-type-field="docker"]').forEach(input => input.disabled = true);
             fieldsProc.classList.remove('hidden');
             fieldsDock.classList.add('hidden');
             cardProc.classList.add('border-brand-500');
@@ -250,6 +252,8 @@
             iconDock.classList.add('text-gray-400');
             textDock.className = 'text-sm font-black text-gray-500 dark:text-dark-text-muted';
         } else {
+            document.querySelectorAll('[data-type-field="process"]').forEach(input => input.disabled = true);
+            document.querySelectorAll('[data-type-field="docker"]').forEach(input => input.disabled = false);
             fieldsProc.classList.add('hidden');
             fieldsDock.classList.remove('hidden');
             cardDock.classList.add('border-brand-500');
@@ -307,9 +311,9 @@
                 document.querySelector('input[name="docker_main_mount"]').value = egg.docker_main_mount || '/app';
                 document.querySelector('input[name="docker_ports"]').value = egg.docker_ports || '';
                 document.querySelector('input[name="docker_network"]').value = egg.docker_network || 'bridge';
-                document.querySelector('input[name="start_command"]').value = egg.start_command || '';
+                document.querySelector('input[data-type-field="docker"][name="start_command"]').value = egg.start_command || '';
             } else {
-                document.querySelector('input[name="start_command"]').value = egg.start_command || '';
+                document.querySelector('input[data-type-field="process"][name="start_command"]').value = egg.start_command || '';
                 document.querySelector('input[name="stop_command"]').value = egg.stop_command || '';
                 document.querySelector('input[name="working_dir"]').value = '/home/malo/my-app';
             }
