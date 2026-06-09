@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Docker\DockerMetrics;
+
 class MetricsController extends Controller
 {
     public function getSystemStats()
@@ -79,30 +81,10 @@ class MetricsController extends Controller
         $ramRaw = 0; // MB
 
         if ($service->type === 'docker') {
-            $containerName = escapeshellarg($service->docker_container_name);
-            $output = shell_exec("timeout 5 docker stats --no-stream --format '{{.CPUPerc}},{{.MemUsage}}' {$containerName} 2>/dev/null");
-
-            if ($output) {
-                $parts = explode(',', trim($output));
-                $cpu = str_replace('%', '', $parts[0] ?? '0.0');
-                $ramText = explode('/', $parts[1] ?? '0.0 MB / 0.0 MB')[0];
-
-                // Parse raw RAM MB for history
-                if (preg_match('/([0-9\.]+)\s*(MB|GB|B|KiB|MiB|GiB)/i', $ramText, $matches)) {
-                    $value = (float) $matches[1];
-                    $unit = strtoupper($matches[2]);
-                    if ($unit === 'GB' || $unit === 'GIB') {
-                        $value *= 1024;
-                    }
-                    if ($unit === 'B') {
-                        $value /= (1024 * 1024);
-                    }
-                    if ($unit === 'KIB' || $unit === 'KB') {
-                        $value /= 1024;
-                    }
-                    $ramRaw = $value;
-                }
-            }
+            $stats = app(DockerMetrics::class)->stats($service->docker_container_name);
+            $cpu = (string) $stats['cpu'];
+            $ramText = $stats['ram'];
+            $ramRaw = $stats['ram_mb'];
         } else {
             if ($service->pid) {
                 $output = shell_exec('ps -p '.escapeshellarg($service->pid).' -o %cpu,rss --no-headers');

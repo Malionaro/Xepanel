@@ -100,23 +100,32 @@ class SettingController extends Controller
         }
 
         $logPath = storage_path('logs/update.log');
+        $command = [PHP_BINARY ?: 'php', 'artisan', 'panel:update', '--repo='.Setting::get('github_repo', 'Malionaro/Xepanel')];
 
-        // Background script to run the update
-        $script = "#!/bin/bash\n";
-        $script .= "set -e\n";
-        $script .= 'cd '.escapeshellarg(base_path())."\n";
-        $script .= 'git pull origin main >> '.escapeshellarg($logPath)." 2>&1\n";
-        $script .= 'composer install --no-interaction --no-dev >> '.escapeshellarg($logPath)." 2>&1\n";
-        $script .= 'php artisan migrate --force >> '.escapeshellarg($logPath)." 2>&1\n";
-        $script .= 'php artisan config:clear >> '.escapeshellarg($logPath)." 2>&1\n";
-        $script .= 'php artisan view:clear >> '.escapeshellarg($logPath)." 2>&1\n";
-
-        $scriptPath = storage_path('app/run_update.sh');
-        $runner->writeExecutableScript($scriptPath, $script);
-        $runner->runInBackground($scriptPath);
+        if (PHP_OS_FAMILY === 'Windows') {
+            $encoded = base64_encode(json_encode($command));
+            $launcher = storage_path('app/run_update.ps1');
+            file_put_contents($launcher, '$command = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("'.$encoded.'")) | ConvertFrom-Json'."\n".
+                '$psi = New-Object System.Diagnostics.ProcessStartInfo'."\n".
+                '$psi.FileName = $command[0]'."\n".
+                '$psi.WorkingDirectory = "'.str_replace('\\', '\\\\', base_path()).'"'."\n".
+                'foreach ($arg in $command[1..($command.Length - 1)]) { [void]$psi.ArgumentList.Add($arg) }'."\n".
+                '$psi.RedirectStandardOutput = $true'."\n".
+                '$psi.RedirectStandardError = $true'."\n".
+                '$psi.UseShellExecute = $false'."\n".
+                '$p = [System.Diagnostics.Process]::Start($psi)'."\n".
+                '$p.StandardOutput.ReadToEnd() + $p.StandardError.ReadToEnd() | Out-File -FilePath "'.str_replace('\\', '\\\\', $logPath).'" -Append -Encoding utf8'."\n");
+            pclose(popen('start /B "" powershell -ExecutionPolicy Bypass -File '.escapeshellarg($launcher), 'r'));
+        } else {
+            $script = "#!/bin/bash\ncd ".escapeshellarg(base_path())."\n";
+            $script .= implode(' ', array_map('escapeshellarg', $command)).' >> '.escapeshellarg($logPath)." 2>&1 &\n";
+            $scriptPath = storage_path('app/run_update.sh');
+            $runner->writeExecutableScript($scriptPath, $script);
+            $runner->runInBackground($scriptPath);
+        }
 
         ActivityLog::log('System Update Started', 'The update process was initiated from the web interface.');
 
-        return response()->json(['status' => 'Update started in background. Check update.log for details.']);
+        return response()->json(['status' => 'Update started in background. Check storage/logs/update.log for details.']);
     }
 }

@@ -4,6 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Service;
 use App\Models\ActivityLog;
+use App\Services\Docker\ContainerManager;
+use App\Services\Docker\DockerLogReader;
+use App\Services\Docker\DockerMetrics;
 use Illuminate\Console\Command;
 use Cron\CronExpression;
 
@@ -39,8 +42,7 @@ class MonitorServices extends Command
                 // Capture Crash Log
                 $lastLogLines = "Log data not available.";
                 if ($service->type === 'docker') {
-                    $containerName = escapeshellarg($service->docker_container_name);
-                    $lastLogLines = shell_exec("timeout 5 docker logs --tail 50 {$containerName} 2>&1");
+                    $lastLogLines = app(DockerLogReader::class)->tail($service->docker_container_name, 50);
                 } else {
                     $logPath = storage_path("logs/services/{$service->id}.log");
                     if (file_exists($logPath)) {
@@ -106,14 +108,12 @@ class MonitorServices extends Command
                             $this->info("Executing scheduled task '{$task['name']}' for service '{$service->name}'...");
                             
                             if ($service->type === 'docker') {
-                                $containerName = escapeshellarg($service->docker_container_name);
-                                $cmd = "timeout 5 docker exec -d {$containerName} " . $task['command'];
+                                app(ContainerManager::class)->execDetached($service, $task['command']);
                             } else {
                                 $cmd = "cd " . escapeshellarg($service->working_dir) . " && " . $task['command'];
                                 $cmd = "nohup {$cmd} > /dev/null 2>&1 &";
+                                shell_exec($cmd);
                             }
-                            
-                            shell_exec($cmd);
                             
                             $task['last_run'] = $now->format('Y-m-d H:i:s');
                             $needsSave = true;
@@ -162,21 +162,9 @@ class MonitorServices extends Command
         $ramRaw = 0.0;
 
         if ($service->type === 'docker') {
-            $containerName = escapeshellarg($service->docker_container_name);
-            $output = shell_exec("timeout 5 docker stats --no-stream --format '{{.CPUPerc}},{{.MemUsage}}' {$containerName} 2>/dev/null");
-            if ($output) {
-                $parts = explode(',', trim($output));
-                $cpu = (float)str_replace('%', '', $parts[0] ?? '0');
-                $ramText = explode('/', $parts[1] ?? '0MB')[0];
-                if (preg_match('/([0-9\.]+)\s*(MB|GB|B|KiB|MiB|GiB)/i', $ramText, $matches)) {
-                    $val = (float)$matches[1];
-                    $unit = strtoupper($matches[2]);
-                    if ($unit === 'GB' || $unit === 'GIB') $val *= 1024;
-                    if ($unit === 'B') $val /= (1024 * 1024);
-                    if ($unit === 'KIB' || $unit === 'KB') $val /= 1024;
-                    $ramRaw = $val;
-                }
-            }
+            $stats = app(DockerMetrics::class)->stats($service->docker_container_name);
+            $cpu = (float) $stats['cpu'];
+            $ramRaw = (float) $stats['ram_mb'];
         } else {
             if ($service->pid) {
                 $output = shell_exec("ps -p " . escapeshellarg($service->pid) . " -o %cpu,rss --no-headers");

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use App\Services\Docker\ContainerManager;
+use App\Services\Docker\DockerClient;
 
 class Service
 {
@@ -130,30 +132,7 @@ class Service
 
     public function dockerApi($method, $endpoint, $data = [], $timeout = 60)
     {
-        $url = 'http://localhost'.$endpoint;
-        try {
-            $client = \Illuminate\Support\Facades\Http::withOptions([
-                'curl' => [
-                    CURLOPT_UNIX_SOCKET_PATH => '/var/run/docker.sock',
-                ],
-            ])->timeout($timeout);
-
-            if ($method === 'GET') {
-                $response = $client->get($url, $data);
-            } elseif ($method === 'POST') {
-                $response = $client->post($url, $data);
-            } elseif ($method === 'DELETE') {
-                $response = $client->delete($url, $data);
-            } else {
-                return null;
-            }
-
-            return ['status' => $response->status(), 'json' => $response->json(), 'body' => $response->body()];
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Docker API Error: '.$e->getMessage());
-
-            return null;
-        }
+        return app(DockerClient::class)->request($method, $endpoint, $data, $timeout);
     }
 
     public function getStatus()
@@ -167,11 +146,7 @@ class Service
         $currentStatus = 'stopped';
 
         if ($this->type === 'docker') {
-            $containerName = $this->docker_container_name;
-            $res = $this->dockerApi('GET', '/v1.41/containers/'.urlencode($containerName).'/json');
-            if ($res && $res['status'] === 200 && isset($res['json']['State']['Running'])) {
-                $currentStatus = $res['json']['State']['Running'] ? 'running' : 'stopped';
-            }
+            $currentStatus = app(ContainerManager::class)->status($this);
         } else {
             if ($this->pid) {
                 $processRunning = @posix_kill($this->pid, 0);
@@ -264,7 +239,7 @@ class Service
 
         $check = shell_exec("ss -tuln 2>/dev/null | awk '{print $5}' | grep -Eq '(^|:)".$port."$' && echo taken");
 
-        return trim($check) === 'taken';
+        return trim((string) $check) === 'taken';
     }
 
     protected function startProcess()
@@ -301,98 +276,14 @@ class Service
 
     protected function startDocker()
     {
-        $logPath = storage_path("logs/services/{$this->id}.log");
-        file_put_contents($logPath, "[Panel] Initiating Docker startup sequence via API...\n", FILE_APPEND);
+        try {
+            app(ContainerManager::class)->start($this);
+        } catch (\App\Services\Docker\DockerUnavailableException $e) {
+            $logPath = storage_path("logs/services/{$this->id}.log");
+            file_put_contents($logPath, "[Panel] ".$e->getMessage()."\n", FILE_APPEND);
 
-        $image = $this->docker_image;
-        $envVars = $this->env_vars ?? [];
-        if (str_contains(strtolower($image), 'minecraft') && ! isset($envVars['EULA'])) {
-            $envVars['EULA'] = 'TRUE';
+            throw $e;
         }
-
-        file_put_contents($logPath, "[Panel] Pulling image {$image} (this may take a while)...\n", FILE_APPEND);
-        // Pull the image (Sync, timeout 300s to allow large images to download)
-        $this->dockerApi('POST', '/v1.41/images/create?fromImage='.urlencode($image), [], 300);
-        file_put_contents($logPath, "[Panel] Image pull request completed.\n", FILE_APPEND);
-
-        $basePath = Setting::get('docker_base_path', storage_path('app/docker'));
-        $hostDataDir = $basePath.'/'.$this->id;
-        $binds = [$hostDataDir.':'.($this->docker_main_mount ?: '/app')];
-        foreach ($this->docker_volumes as $vol) {
-            $binds[] = $vol;
-        }
-
-        $portBindings = [];
-        $exposedPorts = [];
-        foreach ($this->docker_ports as $mapping) {
-            $parts = explode(':', $mapping);
-            if (count($parts) === 2) {
-                $hostPort = $parts[0];
-                $containerPort = $parts[1];
-                if (! str_contains($containerPort, '/')) {
-                    $containerPort .= '/tcp';
-                }
-                $portBindings[$containerPort] = [['HostPort' => $hostPort]];
-                $exposedPorts[$containerPort] = new \stdClass;
-            }
-        }
-
-        $envList = [];
-        foreach ($envVars as $k => $v) {
-            $envList[] = "$k=$v";
-        }
-
-        // Handle Cmd array safely
-        $cmd = trim($this->start_command);
-        $cmdArray = [];
-        if ($cmd) {
-            // Note: simple explosion by spaces. For robust quoted argument parsing, a regex or dedicated parser would be used.
-            $cmdArray = str_getcsv($cmd, ' ');
-        }
-        if (str_contains(strtolower($image), 'minecraft-server') && str_starts_with($cmd, '-')) {
-            $cmdArray = [];
-        }
-
-        $containerConfig = [
-            'Image' => $image,
-            'Env' => $envList,
-            'Tty' => true,
-            'OpenStdin' => true,
-            'StdinOnce' => false,
-            'ExposedPorts' => empty($exposedPorts) ? new \stdClass : $exposedPorts,
-            'HostConfig' => [
-                'Binds' => $binds,
-                'PortBindings' => empty($portBindings) ? new \stdClass : $portBindings,
-                'NetworkMode' => $this->docker_network ?: 'bridge',
-                'RestartPolicy' => ['Name' => 'unless-stopped'],
-            ],
-        ];
-
-        if (! empty($cmdArray)) {
-            $containerConfig['Cmd'] = $cmdArray;
-        }
-
-        file_put_contents($logPath, "[Panel] Creating container {$this->docker_container_name}...\n", FILE_APPEND);
-        // Attempt to create the container
-        $createRes = $this->dockerApi('POST', '/v1.41/containers/create?name='.urlencode($this->docker_container_name), $containerConfig, 10);
-        if ($createRes && $createRes['status'] !== 201 && $createRes['status'] !== 409) {
-            file_put_contents($logPath, '[Error] API Create Response: '.print_r($createRes['json'] ?? $createRes['body'], true)."\n", FILE_APPEND);
-        }
-
-        file_put_contents($logPath, "[Panel] Starting container...\n", FILE_APPEND);
-        $startRes = $this->dockerApi('POST', '/v1.41/containers/'.urlencode($this->docker_container_name).'/start', [], 10);
-        if ($startRes && $startRes['status'] !== 204 && $startRes['status'] !== 304) {
-            file_put_contents($logPath, '[Error] API Start Response: '.print_r($startRes['json'] ?? $startRes['body'], true)."\n", FILE_APPEND);
-        }
-
-        $inspect = $this->dockerApi('GET', '/v1.41/containers/'.urlencode($this->docker_container_name).'/json');
-        if ($inspect && $inspect['status'] === 200) {
-            $this->pid = substr($inspect['json']['Id'], 0, 12);
-        }
-
-        $this->status = 'running';
-        $this->save();
-        file_put_contents($logPath, "[Panel] Container is now running. PID: {$this->pid}\n", FILE_APPEND);
     }
 
     public function stop()
@@ -401,7 +292,7 @@ class Service
             return;
         }
         if ($this->type === 'docker') {
-            $this->dockerApi('POST', '/v1.41/containers/'.urlencode($this->docker_container_name).'/stop?t=10', [], 20);
+            app(ContainerManager::class)->stop($this);
         } else {
             if ($this->stop_command) {
                 $scriptPath = storage_path("app/stop_{$this->id}.sh");

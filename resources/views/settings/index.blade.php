@@ -90,7 +90,7 @@
                     <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ __('panel.github_repo') }}</label>
                     <div class="relative">
                         <i data-lucide="github" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                        <input type="text" name="github_repo" value="{{ $settings['github_repo'] ?? 'malo/panel' }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm shadow-sm" placeholder="username/repo">
+                        <input type="text" name="github_repo" value="{{ $settings['github_repo'] ?? 'Malionaro/Xepanel' }}" class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all dark:text-white font-mono text-sm shadow-sm" placeholder="username/repo">
                     </div>
                 </div>
                 <div class="space-y-5">

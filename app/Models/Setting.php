@@ -45,6 +45,7 @@ class Setting
             'docker_base_path' => storage_path('app/docker'),
             'default_timezone' => 'UTC',
             'docker_default_network' => 'bridge',
+            'github_repo' => 'Malionaro/Xepanel',
             'ui_theme' => 'system', // system, dark, light
         ];
     }

@@ -16,12 +16,17 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SetupController;
 use App\Http\Controllers\StreamController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UserController;
 use App\Models\Service;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/setup', [SetupController::class, 'show'])->name('setup.index');
+Route::post('/setup', [SetupController::class, 'store'])->name('setup.store');
+
+Route::middleware('setup.ready')->group(function () {
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -227,3 +232,4 @@ Route::prefix('api')->middleware('api.auth')->group(function () {
 // API Documentation
 Route::get('/docs', [ApiController::class, 'docs'])->name('api.docs');
 Route::get('/api-schema.json', [ApiController::class, 'schema'])->name('api.schema');
+});

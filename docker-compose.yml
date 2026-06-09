@@ -1,0 +1,96 @@
+services:
+  web:
+    image: nginx:1.27-alpine
+    depends_on:
+      - app
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html
+      - ./.docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - xepanel
+
+  app:
+    image: xepanel-app
+    build:
+      context: .
+      dockerfile: .docker/app/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: "http://localhost:${APP_PORT:-8080}"
+      DB_CONNECTION: sqlite
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: database
+      DOCKER_HOST_SOCKET: /var/run/docker.sock
+    volumes:
+      - .:/var/www/html
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - xepanel
+
+  queue:
+    image: xepanel-app
+    build:
+      context: .
+      dockerfile: .docker/app/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    command: php artisan queue:work --tries=1 --timeout=0
+    depends_on:
+      - app
+    environment:
+      DB_CONNECTION: sqlite
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: database
+      DOCKER_HOST_SOCKET: /var/run/docker.sock
+    volumes:
+      - .:/var/www/html
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - xepanel
+
+  scheduler:
+    image: xepanel-app
+    build:
+      context: .
+      dockerfile: .docker/app/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    command: php artisan schedule:work
+    depends_on:
+      - app
+    environment:
+      DB_CONNECTION: sqlite
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: database
+      DOCKER_HOST_SOCKET: /var/run/docker.sock
+    volumes:
+      - .:/var/www/html
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - xepanel
+
+  vite:
+    image: node:22-alpine
+    working_dir: /var/www/html
+    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - xepanel
+
+networks:
+  xepanel:
+    name: xepanel

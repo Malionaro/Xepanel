@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use App\Models\DiscordMessage;
 use App\Models\ActivityLog;
+use App\Services\Docker\DockerMetrics;
 
 class DashboardController extends Controller
 {
@@ -45,29 +46,12 @@ class DashboardController extends Controller
         $totalCpu = 0;
         $totalRamMb = 0;
 
-        // BATCH DOCKER STATS (Extremely faster than per-service)
         $dockerServices = $running->filter(fn($s) => $s->type === 'docker');
         if ($dockerServices->isNotEmpty()) {
-            $names = $dockerServices->map(fn($s) => escapeshellarg($s->docker_container_name))->implode(' ');
-            $output = shell_exec("timeout 5 docker stats --no-stream --format '{{.Name}},{{.CPUPerc}},{{.MemUsage}}' {$names} 2>/dev/null");
-            
-            if ($output) {
-                $lines = explode("\n", trim($output));
-                foreach ($lines as $line) {
-                    $parts = explode(',', $line);
-                    if (count($parts) >= 3) {
-                        $totalCpu += (float)str_replace('%', '', $parts[1]);
-                        $ramText = explode('/', $parts[2])[0];
-                        if (preg_match('/([0-9\.]+)\s*(MB|GB|B|KiB|MiB|GiB)/i', $ramText, $matches)) {
-                            $val = (float)$matches[1];
-                            $unit = strtoupper($matches[2]);
-                            if (str_starts_with($unit, 'G')) $val *= 1024;
-                            if ($unit === 'B') $val /= (1024 * 1024);
-                            if (str_starts_with($unit, 'K')) $val /= 1024;
-                            $totalRamMb += $val;
-                        }
-                    }
-                }
+            $stats = app(DockerMetrics::class)->batchStats($dockerServices->pluck('docker_container_name'));
+            foreach ($stats as $stat) {
+                $totalCpu += (float) $stat['cpu'];
+                $totalRamMb += (float) $stat['ram_mb'];
             }
         }
 

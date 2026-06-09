@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\ActivityLog;
+use App\Services\Docker\DockerClient;
+use App\Services\Docker\DockerLogReader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -63,19 +65,7 @@ class ConsoleController extends Controller
         $lines = (int) \App\Models\Setting::get('log_tail_lines', 100);
 
         if ($service->type === 'docker') {
-            $containerName = $service->docker_container_name;
-            $dockerLogs = "";
-
-            $res = $service->dockerApi('GET', '/v1.41/containers/' . urlencode($containerName) . '/logs?stdout=1&stderr=1&tail=' . $lines, [], 5);
-            
-            if (!$res) {
-                \Illuminate\Support\Facades\Log::error("Docker API getLogs: null response (timeout) for {$containerName}");
-            } elseif ($res['status'] !== 200) {
-                \Illuminate\Support\Facades\Log::error("Docker API getLogs: status {$res['status']} for {$containerName}");
-            } else {
-                $rawLogs = $this->demultiplexDockerLogs($res['body']);
-                $dockerLogs = mb_convert_encoding($rawLogs, 'UTF-8', 'UTF-8');
-            }
+            $dockerLogs = app(DockerLogReader::class)->tail($service->docker_container_name, $lines) ?? "";
             
             // Also check the local log file for pull progress/startup info
             $logPath = storage_path("logs/services/{$id}.log");
@@ -89,7 +79,7 @@ class ConsoleController extends Controller
             if ($localLogs) $combined .= "[Panel] Startup logs:\n" . $localLogs . "\n";
             if ($dockerLogs) $combined .= "[Docker] Container Logs:\n" . $dockerLogs;
 
-            return response()->json(['logs' => $combined ?: '--- Awaiting container startup ---']);
+            return response()->json(['logs' => $combined ?: "--- Docker ist nicht erreichbar. Installiere Docker Desktop oder starte das Panel mit Docker Compose. ---"]);
         }
 
         $path = storage_path("logs/services/{$id}.log");
@@ -110,31 +100,7 @@ class ConsoleController extends Controller
         if (!$command) return response()->json(['success' => false]);
 
         if ($service->type === 'docker') {
-            // Attach to the running Docker container and write to its STDIN. 
-            // We use raw stream socket because the Docker API requires connection hijacking for stdin.
-            $fp = @stream_socket_client('unix:///var/run/docker.sock', $errNo, $errStr, 5);
-            if ($fp) {
-                $containerId = urlencode($service->docker_container_name);
-                $req = "POST /v1.41/containers/{$containerId}/attach?stdin=1&stream=1 HTTP/1.1\r\n";
-                $req .= "Host: localhost\r\n";
-                $req .= "Connection: Upgrade\r\n";
-                $req .= "Upgrade: tcp\r\n\r\n";
-                
-                fwrite($fp, $req);
-                usleep(50000); 
-                
-                // Discard the HTTP headers before writing the command
-                $head = '';
-                stream_set_timeout($fp, 1);
-                while (!feof($fp)) {
-                    $char = fgetc($fp);
-                    $head .= $char;
-                    if (str_ends_with($head, "\r\n\r\n")) break;
-                }
-                
-                fwrite($fp, $command . "\n");
-                fclose($fp);
-            }
+            app(DockerClient::class)->attachStdin($service->docker_container_name, $command);
         } else {
             $logPath = storage_path("logs/services/{$id}.log");
             $cwd = escapeshellarg($service->working_dir);
